@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POD T-Shirt eBay CSV Generator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg: #0a0e1a;
+  --card: #111827;
+  --card2: #1a2235;
+  --border: #1e293b;
+  --accent: #3b82f6;
+  --accent2: #6366f1;
+  --green: #10b981;
+  --orange: #f59e0b;
+  --red: #ef4444;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #475569;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #1e1b4b 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 0;
+}
+.header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.logo h1 {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #fff, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.logo p { font-size: 12px; color: var(--text2); }
+.header-stats {
+  display: flex; gap: 24px;
+}
+.stat-box {
+  text-align: center;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.stat-box .num { font-size: 22px; font-weight: 700; color: var(--accent); }
+.stat-box .label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* MAIN */
+.main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+}
+
+/* CARDS */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-header h2 {
+  font-size: 15px;
+  font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-body { padding: 20px; }
+
+/* INPUT AREA */
+.input-section { grid-column: 1; }
+.paste-area {
+  width: 100%;
+  min-height: 320px;
+  background: var(--bg);
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.8;
+  resize: vertical;
+  transition: border-color 0.3s;
+}
+.paste-area:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+.paste-area::placeholder { color: var(--text3); }
+
+.input-hint {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: rgba(59,130,246,0.08);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+.input-hint code {
+  background: rgba(255,255,255,0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+}
+
+/* SIDEBAR */
+.sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+/* SETTINGS */
+.setting-group {
+  margin-bottom: 16px;
+}
+.setting-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text2);
+  margin-bottom: 6px;
+}
+.setting-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+.setting-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* MOCKUP URLS */
+.mockup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mockup-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bg);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+.mockup-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(99,102,241,0.2);
+  color: var(--accent2);
+  white-space: nowrap;
+}
+.mockup-url {
+  flex: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mockup-edit {
+  width: 100%;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.mockup-edit:focus { outline: none; color: var(--text); }
+
+/* PRICE TABLE */
+.price-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.price-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+.price-size {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  width: 32px;
+}
+.price-input {
+  width: 60px;
+  padding: 4px 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--green);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: right;
+}
+.price-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(59,130,246,0.05);
+}
+
+/* BUTTONS */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  width: 100%;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(59,130,246,0.3); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-secondary {
+  background: var(--bg);
+  color: var(--text2);
+  border: 1px solid var(--border);
+  width: 100%;
+  font-size: 12px;
+  padding: 8px 16px;
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--text); }
+
+/* TABLE PREVIEW */
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin-top: 12px;
+}
+.preview-table th {
+  text-align: left;
+  padding: 8px 10px;
+  background: var(--bg);
+  color: var(--text2);
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+.preview-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.preview-table tr:hover td { background: rgba(255,255,255,0.02); }
+.preview-table .row-parent td { color: var(--text); font-weight: 500; }
+.preview-table .row-var td { font-size: 10px; color: var(--text3); }
+.badge-add {
+  font-size: 9px; font-weight: 600; padding: 2px 6px;
+  background: rgba(16,185,129,0.15); color: var(--green);
+  border-radius: 4px;
+}
+.badge-var {
+  font-size: 9px; font-weight: 600; padding: 2px 6px;
+  background: rgba(245,158,11,0.15); color: var(--orange);
+  border-radius: 4px;
+}
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 24px;
+  background: var(--green);
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  z-index: 1000;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 8px 30px rgba(16,185,129,0.3);
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; }
+  .header-stats { display: none; }
+}
+
+/* COLLAPSIBLE */
+.collapse-toggle {
+  cursor: pointer;
+  user-select: none;
+}
+.collapse-toggle::after {
+  content: '▾';
+  margin-left: 6px;
+  font-size: 11px;
+  transition: transform 0.2s;
+}
+.collapse-toggle.collapsed::after { transform: rotate(-90deg); }
+.collapse-content { overflow: hidden; transition: max-height 0.3s ease; }
+.collapse-content.hidden { max-height: 0 !important; padding: 0 20px !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">🚀</div>
+      <div>
+        <h1>POD T-Shirt CSV Generator</h1>
+        <p>Paste Title + Image → Export eBay CSV</p>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-box">
+        <div class="num" id="statListings">0</div>
+        <div class="label">Listings</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="statRows">0</div>
+        <div class="label">CSV Rows</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="statImages">0</div>
+        <div class="label">Images</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <!-- LEFT: INPUT -->
+  <div class="input-section">
+    <div class="card">
+      <div class="card-header">
+        <h2>📋 Nhập dữ liệu</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn-secondary" onclick="loadSample()" style="width:auto;padding:6px 12px">Sample</button>
+          <button class="btn-secondary" onclick="clearAll()" style="width:auto;padding:6px 12px">Clear</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <textarea class="paste-area" id="inputArea" placeholder="Paste dữ liệu vào đây — mỗi dòng 1 listing, dấu | ngăn cách:
+
+Title|Link ảnh chính
+
+Ví dụ:
+Phish Summer Tour 2025 T-Shirt|https://imagedelivery.net/.../public
+Custom Cat Lover Graphic Tee|https://imagedelivery.net/.../public
+Vintage Mountain Hiking Shirt|https://imagedelivery.net/.../public
+
+💡 Format: Title|URL (mỗi dòng 1 sản phẩm)" spellcheck="false"></textarea>
+
+        <div class="input-hint">
+          <strong>💡 Format:</strong> Mỗi dòng = <code>Title|Link ảnh chính</code> — dùng dấu <code>|</code> ngăn cách. 
+          Cũng hỗ trợ TAB nếu copy từ Google Sheets/Excel.
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:16px">
+          <button class="btn btn-primary" id="btnGenerate" onclick="generateCSV()" disabled>
+            📦 Generate & Download CSV
+          </button>
+        </div>
+
+        <!-- PREVIEW -->
+        <div id="previewSection" style="display:none;margin-top:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <h3 style="font-size:13px;color:var(--text2)">👀 Preview (5 listings đầu)</h3>
+            <span id="previewCount" style="font-size:11px;color:var(--text3)"></span>
+          </div>
+          <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px">
+            <table class="preview-table" id="previewTable">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Title</th>
+                  <th>Size</th>
+                  <th>Price</th>
+                  <th>Images</th>
+                </tr>
+              </thead>
+              <tbody id="previewBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: SETTINGS -->
+  <div class="sidebar">
+    <!-- MOCKUP IMAGES -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="collapse-toggle" onclick="toggleCollapse(this)">🖼️ Ảnh mockup cố định</h2>
+      </div>
+      <div class="card-body collapse-content">
+        <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Ảnh 2-6 giống nhau tất cả listings. Click để sửa URL.</p>
+        <div class="mockup-list" id="mockupList"></div>
+      </div>
+    </div>
+
+    <!-- PRICES -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="collapse-toggle" onclick="toggleCollapse(this)">💰 Giá theo Size</h2>
+      </div>
+      <div class="card-body collapse-content">
+        <div class="price-grid" id="priceGrid"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="collapse-toggle collapsed" onclick="toggleCollapse(this)">⚙️ Cài đặt listing</h2>
+      </div>
+      <div class="card-body collapse-content hidden">
+        <div class="setting-group">
+          <div class="setting-label">Category ID</div>
+          <input class="setting-input" id="setCategoryId" value="15687">
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">Location</div>
+          <input class="setting-input" id="setLocation" value="Kuala Lumpur, Malaysia">
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">Shipping Profile</div>
+          <input class="setting-input" id="setShipping" value="SHIPPING">
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">Return Profile</div>
+          <input class="setting-input" id="setReturn" value="RETURN">
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">Payment Profile</div>
+          <input class="setting-input" id="setPayment" value="PAYMENT">
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">Action Header</div>
+          <input class="setting-input" id="setActionHeader" value="*Action(SiteID=US|Country=MY|Currency=USD|Version=1193|CC=UTF-8)" style="font-size:10px">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" style="display:none"></div>
+
+<script>
+// =====================================================
+// CONFIG
+// =====================================================
+
+const DEFAULT_MOCKUPS = [
+  "https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/eec93afd-b541-4809-446a-75c657d48300/public",
+  "https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/cc3bda12-c2eb-4a80-04ca-258824b5d300/public",
+  "https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/b0782d80-afe2-4353-635a-c7f0868d2500/public",
+  "https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/fdf315b4-55f5-4c43-023e-b7df31301900/public",
+  "https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/331981e1-7226-49df-559f-f28056f20200/public"
+];
+
+const DEFAULT_VARIATIONS = [
+  { size: "S",   price: "15.99" },
+  { size: "M",   price: "17.99" },
+  { size: "L",   price: "19.99" },
+  { size: "XL",  price: "21.99" },
+  { size: "2XL", price: "22.99" },
+  { size: "3XL", price: "23.99" },
+  { size: "4XL", price: "24.99" },
+  { size: "5XL", price: "25.99" }
+];
+
+const DESCRIPTION_HTML = `<!doctype html>
+<html lang="zxx">
+<head>
+</head>
+<body><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"></body>
+</html>
+<title>Free eBay listing template designed by dewiso.com</title>
+<link href="https://dewiso.com/css/bootstrap.min.css" rel="stylesheet" />
+<style type="text/css">.element{background:#283055}
+</style>
+<div class="element" style="border-left: 1px solid #283055; border-right: 1px solid #283055; border-top: 1px solid #283055; color: #fff; border-bottom: 1px solid #283055; line-height: 45px">
+<div class="container" style="padding: 40px 0 40px 0">
+<div class="col-12 col-md-12">
+<h1 style="text-align: center"><font face="Arial">PRODUCT DESCRIPTIONS</font></h1>
+</div>
+</div>
+</div>
+
+<div style="background: #F4F6F7; border-left: 1px solid #283055; border-right: 1px solid #283055; color: #273C2C; line-height: 25px">
+<div class="container" style="padding: 40px 0 40px 0">
+<div class="col-12 col-md-12">
+<h2 style="line-height: 45px; color: rgb(40, 48, 85); text-align: center;">100% Satisfaction Guaranteed - Shop With Complete Confidence</h2>
+
+<h3 style="text-align: center;">Before placing your order, please review the complete product description carefully. Your satisfaction is our highest priority and we want to ensure you make an informed purchase decision.</h3>
+
+<h2 style="line-height: 45px; color: rgb(40, 48, 85); text-align: justify;"><strong>FEATURES AND FURTHER DETAILS</strong></h2>
+
+<hr align="left" style="background: #283055; height: 1px; width: 10%" />
+<h2 style="text-align: justify;">Classic Unisex T-Shirt Gildan 5000 (Made In US)</h2>
+
+<p style="text-align: justify;">Elevate your wardrobe with our premium custom-printed t-shirt, featuring exceptional quality and versatile design. Each shirt combines classic styling with modern comfort, perfect for everyday wear and special occasions.</p>
+
+<p style="text-align: justify;"><strong>Key Features:</strong> &bull; Premium 5.3 oz/yd&sup2; weight cotton blend &bull; Durable double-needle stitching on sleeves &bull; Reinforced taped neck and shoulders &bull; Classic crew neckline &bull; Comfortable unisex fit &bull; Professional DTG (Direct to Garment) printing.</p>
+
+<p style="text-align: justify;"><strong>Material Composition:</strong> &bull; Standard Colors: 100% cotton &bull; Dark/Heather Variations: 50% cotton, 50% polyester &bull; Sport Grey &amp; Antique Colors: 90% cotton, 10% polyester &bull; Ash: 99% cotton, 1% polyester.</p>
+
+<p style="text-align: justify;"><strong>Available Sizes</strong>: S, M, L, XL, 2XL, 3XL, 4XL, 5XL.</p>
+
+<p style="text-align: justify;"><strong>Color Selection:</strong> Ash, Black, Charcoal, Dark Chocolate, Dark Heather, Forest Green, Gold, Ice Grey, Irish Green, Kiwi, Light Blue, Light Pink, Maroon, Military Green, Navy, Orange, Purple, Red, Royal, Sand, Sport Grey, Tropical Blue, Turf Green, White, Antique Irish Green, Antique Orange, Antique Sapphire, Azalea, Cardinal Red, Carolina Blue, Cobalt, Coral Silk, Cornsilk, Daisy, Graphite Heather, Heather Navy, Heather Red, Heliconia, Lime, Natural, Sapphire, Tweed.&nbsp;</p>
+
+<p style="text-align: justify;"><strong>Base Product:</strong> Gildan 5000 Perfect for: Men and women seeking quality, comfort, and style.</p>
+
+<p style="text-align: justify;"><strong>Note:</strong> Colors may slightly vary due to screen settings.</p>
+</div>
+</div>
+</div>
+
+<div style="border-left: 1px solid #283055; border-right: 1px solid #283055; border-bottom: 1px solid #283055; color: #273C2C; line-height: 25px">
+<div class="container" style="padding: 40px 0 40px 0">
+<div class="col-12 col-md-12">
+<h2 style="color: #283055; line-height: 45px"><strong>CONTACT US</strong></h2>
+
+<p><strong>24/7 Customer Support - Fast &amp; Reliable Service</strong></p>
+
+<hr align="left" style="background: #283055; height: 1px; width: 10%" />
+<p style="text-align: justify;">Have a question or concern? We're here to help! Feel free to reach out through eBay messages anytime, and we'll respond within 24 hours. Your satisfaction is our priority, so please don't hesitate to contact us before, during, or after your purchase. We want to ensure you're completely happy with your shopping experience.</p>
+</div>
+
+<table class="table table-responsive table-borderless" style="color: #273C2C; line-height: 25px; font-size: 16px; margin-top: 30px">
+<tbody>
+<tr>
+<th scope="row" style="color: rgb(0, 0, 0); text-align: justify;"><font face="Arial">Payment</font></th>
+<td style="text-align: justify;">We accept all eBay-approved payment methods.</td>
+</tr>
+<tr>
+<th scope="row" style="color: rgb(0, 0, 0); text-align: justify;"><font face="Arial">Shipping</font></th>
+<td>
+<p style="text-align: justify;">&bull; US Orders: 5-10 business days.</p>
+
+<p style="text-align: justify;"><em><strong>*Please allow 2-5&nbsp;business days for order processing. </strong></em></p>
+
+<p style="text-align: justify;"><em><strong>*Ship from USA Warehouse.</strong></em></p>
+</td>
+</tr>
+<tr>
+<th scope="row" style="color: rgb(0, 0, 0); text-align: justify;"><font face="Arial">Contact</font></th>
+<td style="text-align: justify;">Your satisfaction is our top priority! Before leaving any negative feedback, please reach out to us first - we're committed to resolving any concerns you may have. We take pride in our 100% customer satisfaction policy and will work diligently to ensure you're completely happy with your experience. Your feedback helps us serve you better!</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="col-12 col-md-12 element" style="border-top: 1px solid #283055; color: #fff; line-height: 25px">
+<div class="container" style="padding: 20px 0 10px 0; font-size: 80%; text-align: center">
+<p><font face="Arial">THANK YOU FOR YOUR PURCHASING OUR PRODUCTS.</font></p>
+</div>
+</div>
+</div>
+`;
+
+const CSV_HEADERS = [
+  "*Action(SiteID=US|Country=MY|Currency=USD|Version=1193|CC=UTF-8)",
+  "CustomLabel","*Category","StoreCategory","*Title","Subtitle",
+  "Relationship","RelationshipDetails","*ConditionID","*C:Brand","*C:Size",
+  "*C:Type","*C:Size Type","*C:Color","*C:Department","C:Theme","C:Fit",
+  "C:Character","C:Sleeve Length","C:Pattern","C:Character Family",
+  "C:Country/Region of Manufacture","C:Features","C:Neckline","C:Material",
+  "C:Fabric Type","C:Vintage","C:Accents","C:Product Line","C:Personalize",
+  "C:Handmade","C:Season","C:Year Manufactured","C:Model","C:Garment Care",
+  "C:California Prop 65 Warning","C:MPN","C:Personalization Instructions",
+  "C:Unit Quantity","C:Unit Type","PicURL","GalleryType","VideoID",
+  "*Description","*Format","*Duration","*StartPrice","BuyItNowPrice",
+  "BestOfferEnabled","BestOfferAutoAcceptPrice","MinimumBestOfferPrice",
+  "*Quantity","ImmediatePayRequired","*Location","ShippingType",
+  "ShippingService-1:Option","ShippingService-1:Cost",
+  "ShippingService-2:Option","ShippingService-2:Cost","*DispatchTimeMax",
+  "PromotionalShippingDiscount","ShippingDiscountProfileID",
+  "*ReturnsAcceptedOption","ReturnsWithinOption","RefundOption",
+  "ShippingCostPaidByOption","AdditionalDetails","ShippingProfileName",
+  "ReturnProfileName","PaymentProfileName","ProductCompliancePolicyID",
+  "Regional ProductCompliancePolicies","EconomicOperator CompanyName",
+  "EconomicOperator AddressLine1","EconomicOperator AddressLine2",
+  "EconomicOperator City","EconomicOperator Country",
+  "EconomicOperator PostalCode","EconomicOperator StateOrProvince",
+  "EconomicOperator Phone","EconomicOperator Email"
+];
+
+const TOTAL_COLS = CSV_HEADERS.length;
+
+// =====================================================
+// STATE
+// =====================================================
+
+let mockupUrls = [...DEFAULT_MOCKUPS];
+let variations = JSON.parse(JSON.stringify(DEFAULT_VARIATIONS));
+let parsedListings = [];
+
+// =====================================================
+// INIT
+// =====================================================
+
+function init() {
+  renderMockups();
+  renderPrices();
+  
+  const input = document.getElementById('inputArea');
+  input.addEventListener('input', () => {
+    parseInput();
+    updatePreview();
+  });
+  input.addEventListener('paste', () => {
+    setTimeout(() => { parseInput(); updatePreview(); }, 50);
+  });
+}
+
+// =====================================================
+// PARSE INPUT
+// =====================================================
+
+function parseInput() {
+  const raw = document.getElementById('inputArea').value.trim();
+  if (!raw) {
+    parsedListings = [];
+    updateStats();
+    document.getElementById('btnGenerate').disabled = true;
+    document.getElementById('previewSection').style.display = 'none';
+    return;
+  }
+
+  const lines = raw.split('\n').filter(l => l.trim());
+  parsedListings = [];
+
+  for (const line of lines) {
+    let title = '', imgUrl = '';
+    
+    // Split by pipe | (primary), fallback to TAB
+    if (line.includes('|')) {
+      // Find the LAST pipe that separates title from URL
+      // URL always starts with http, so find pipe before http
+      const httpIdx = line.indexOf('http');
+      if (httpIdx > 0) {
+        // Find the pipe closest to (and before) the http
+        const beforeHttp = line.substring(0, httpIdx);
+        const lastPipe = beforeHttp.lastIndexOf('|');
+        if (lastPipe !== -1) {
+          title = line.substring(0, lastPipe).trim();
+          imgUrl = line.substring(lastPipe + 1).trim();
+        }
+      }
+      if (!title) {
+        const parts = line.split('|');
+        imgUrl = parts.pop().trim();
+        title = parts.join('|').trim();
+      }
+    } else if (line.includes('\t')) {
+      const parts = line.split('\t');
+      title = parts[0].trim();
+      imgUrl = parts[1] ? parts[1].trim() : '';
+    } else {
+      const urlMatch = line.match(/(https?:\/\/\S+)/);
+      if (urlMatch) {
+        imgUrl = urlMatch[1];
+        title = line.replace(imgUrl, '').trim();
+      } else {
+        title = line.trim();
+      }
+    }
+
+    if (title) {
+      parsedListings.push({ title: title.substring(0, 80), imgUrl });
+    }
+  }
+
+  document.getElementById('btnGenerate').disabled = parsedListings.length === 0;
+  updateStats();
+}
+
+// =====================================================
+// UPDATE UI
+// =====================================================
+
+function updateStats() {
+  const n = parsedListings.length;
+  document.getElementById('statListings').textContent = n;
+  document.getElementById('statRows').textContent = n * (1 + variations.length);
+  document.getElementById('statImages').textContent = n * (1 + mockupUrls.length);
+}
+
+function updatePreview() {
+  if (parsedListings.length === 0) {
+    document.getElementById('previewSection').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('previewSection').style.display = 'block';
+  document.getElementById('previewCount').textContent = 
+    `Tổng: ${parsedListings.length} listings × ${1 + variations.length} rows = ${parsedListings.length * (1 + variations.length)} rows`;
+
+  const tbody = document.getElementById('previewBody');
+  tbody.innerHTML = '';
+
+  const showCount = Math.min(parsedListings.length, 5);
+  for (let i = 0; i < showCount; i++) {
+    const l = parsedListings[i];
+    // Parent row
+    const tr = document.createElement('tr');
+    tr.className = 'row-parent';
+    tr.innerHTML = `
+      <td><span class="badge-add">Add</span></td>
+      <td>${l.title.substring(0, 55)}${l.title.length > 55 ? '...' : ''}</td>
+      <td>S-5XL</td>
+      <td>—</td>
+      <td>${l.imgUrl ? '✅' : '⚠️'} +${mockupUrls.length} mockup</td>
+    `;
+    tbody.appendChild(tr);
+
+    // Show first 2 variations
+    for (let v = 0; v < 2; v++) {
+      const vr = document.createElement('tr');
+      vr.className = 'row-var';
+      vr.innerHTML = `
+        <td><span class="badge-var">Var</span></td>
+        <td style="padding-left:24px">↳ ${variations[v].size}</td>
+        <td>${variations[v].size}</td>
+        <td>$${variations[v].price}</td>
+        <td>—</td>
+      `;
+      tbody.appendChild(vr);
+    }
+    // "... more" row
+    const moreRow = document.createElement('tr');
+    moreRow.className = 'row-var';
+    moreRow.innerHTML = `<td></td><td style="padding-left:24px;color:var(--text3)">↳ ... +${variations.length - 2} sizes</td><td></td><td></td><td></td>`;
+    tbody.appendChild(moreRow);
+  }
+
+  if (parsedListings.length > 5) {
+    const moreRow = document.createElement('tr');
+    moreRow.innerHTML = `<td colspan="5" style="text-align:center;color:var(--text3);font-size:11px;padding:8px">... +${parsedListings.length - 5} listings nữa</td>`;
+    tbody.appendChild(moreRow);
+  }
+}
+
+// =====================================================
+// RENDER SETTINGS
+// =====================================================
+
+function renderMockups() {
+  const list = document.getElementById('mockupList');
+  list.innerHTML = '';
+  mockupUrls.forEach((url, i) => {
+    const div = document.createElement('div');
+    div.className = 'mockup-item';
+    div.innerHTML = `
+      <span class="mockup-badge">IMG ${i + 2}</span>
+      <input class="mockup-edit" value="${url}" onchange="mockupUrls[${i}]=this.value">
+    `;
+    list.appendChild(div);
+  });
+}
+
+function renderPrices() {
+  const grid = document.getElementById('priceGrid');
+  grid.innerHTML = '';
+  variations.forEach((v, i) => {
+    const div = document.createElement('div');
+    div.className = 'price-item';
+    div.innerHTML = `
+      <span class="price-size">${v.size}</span>
+      <span style="color:var(--text3);font-size:11px">$</span>
+      <input class="price-input" value="${v.price}" 
+        onchange="variations[${i}].price=this.value; updateStats()">
+    `;
+    grid.appendChild(div);
+  });
+}
+
+// =====================================================
+// GENERATE CSV
+// =====================================================
+
+function generateCSV() {
+  if (parsedListings.length === 0) return;
+
+  // Read settings
+  const categoryId = document.getElementById('setCategoryId').value;
+  const location = document.getElementById('setLocation').value;
+  const shippingProfile = document.getElementById('setShipping').value;
+  const returnProfile = document.getElementById('setReturn').value;
+  const paymentProfile = document.getElementById('setPayment').value;
+  const actionHeader = document.getElementById('setActionHeader').value;
+
+  // Update first header
+  CSV_HEADERS[0] = actionHeader;
+
+  const allRows = [CSV_HEADERS];
+  const sizeList = variations.map(v => v.size).join(';');
+
+  for (const listing of parsedListings) {
+    // PARENT ROW
+    const parent = new Array(TOTAL_COLS).fill('');
+    parent[0]  = 'Add';
+    parent[2]  = categoryId;
+    parent[4]  = listing.title;
+    parent[7]  = 'US Size=' + sizeList;
+    parent[8]  = '1000';
+    parent[9]  = 'Unbranded';
+    parent[10] = 'S-5XL';
+    parent[11] = 'T-shirt';
+    parent[12] = 'Regular';
+    parent[13] = 'MultiColor';
+    parent[14] = 'Unisex Adult';
+    parent[16] = 'Regular fit';
+    parent[18] = 'Short Sleeve';
+    parent[29] = 'Yes';
+    parent[37] = 'Please indicate the shirt color you would like and customize it as needed!';
+
+    // PicURL
+    const allImages = [listing.imgUrl, ...mockupUrls].filter(u => u);
+    parent[40] = allImages.join(' | ');
+
+    parent[43] = DESCRIPTION_HTML;
+    parent[44] = 'FixedPrice';
+    parent[45] = 'GTC';
+    parent[53] = location;
+    parent[67] = shippingProfile;
+    parent[68] = returnProfile;
+    parent[69] = paymentProfile;
+
+    allRows.push(parent);
+
+    // VARIATION ROWS
+    for (const v of variations) {
+      const varRow = new Array(TOTAL_COLS).fill('');
+      varRow[6] = 'Variation';
+      varRow[7] = (v.size === 'S') 
+        ? 'US Size = ' + v.size 
+        : 'US Size=' + v.size;
+      varRow[46] = v.price;
+      varRow[51] = '1';
+      allRows.push(varRow);
+    }
+  }
+
+  // Convert to CSV string
+  const csvContent = allRows.map(row => 
+    row.map(cell => {
+      const s = String(cell);
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    }).join(',')
+  ).join('\n');
+
+  // Download
+  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const timestamp = new Date().toISOString().slice(0,16).replace(/[-:T]/g, '');
+  a.href = url;
+  a.download = `tshirt_ebay_${parsedListings.length}listings_${timestamp}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  showToast(`✅ Downloaded! ${parsedListings.length} listings, ${allRows.length - 1} rows`);
+}
+
+// =====================================================
+// HELPERS
+// =====================================================
+
+function loadSample() {
+  document.getElementById('inputArea').value = 
+`Phish Summer Tour 2025 September 13 14 Coca Cola Amphitheater Poster T-Shirt|https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/cc07c621-0583-4349-e302-078139a26400/public
+Philadelphia Phillies Forever Not Just When We Win Signature 2025 T-Shirt|https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/b4168ce5-e258-4433-22cb-088593f24b00/public
+Pearl Charles And Michael Rault June 28 2025 Show Poster T-Shirt|https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/fb700441-ec36-45d8-d5fd-0f65b3c72800/public
+Paris Saint Germain Psg Nike Ucl Winners T-Shirt|https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/adb82f66-b18b-402a-1ddd-7f4a2fa98a00/public
+Custom Vintage Retro Mountain Hiking Adventure T-Shirt|https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/f12bc6a7-b932-4a63-3f21-abc123def000/public`;
+
+  parseInput();
+  updatePreview();
+}
+
+function clearAll() {
+  document.getElementById('inputArea').value = '';
+  parsedListings = [];
+  updateStats();
+  document.getElementById('btnGenerate').disabled = true;
+  document.getElementById('previewSection').style.display = 'none';
+}
+
+function toggleCollapse(el) {
+  el.classList.toggle('collapsed');
+  const content = el.closest('.card-header').nextElementSibling;
+  content.classList.toggle('hidden');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  setTimeout(() => { toast.style.display = 'none'; }, 4000);
+}
+
+// Init
+init();
+</script>
+</body>
+</html>
