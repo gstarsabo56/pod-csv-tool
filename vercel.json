@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/cf-proxy.js": {
+      "runtime": "nodejs20.x"
+    }
+  }
+}
