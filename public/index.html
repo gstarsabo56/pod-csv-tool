@@ -337,26 +337,18 @@ Original title: {{TITLE}}</textarea>
         <div class="fg"><label class="fl">Tên product type</label><input class="fi" id="edName" placeholder="T-Shirt 2D"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="fg"><label class="fl">eBay Category ID</label><input class="fi" id="edCat" placeholder="15687"></div>
+        <div class="fg"><label class="fl">eBay Category ID</label><input class="fi" id="edCat" placeholder="15687" onchange="onCatChange()" oninput="onCatChange()"></div>
         <div class="fg"><label class="fl">Variation Key</label><input class="fi" id="edVarKey" placeholder="US Size, Size, Compatible Model..."></div>
       </div>
 
-      <!-- Item Specifics -->
+      <!-- Item Specifics (dynamic per category) -->
       <div class="card" style="margin:12px 0">
-        <div class="card-h"><h2>📝 Item specifics</h2></div>
+        <div class="card-h">
+          <h2>📝 Item specifics</h2>
+          <span style="font-size:12px;color:var(--text3)" id="edCatLabel"></span>
+        </div>
         <div class="card-b">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="fg"><label class="fl">Brand</label><input class="fi" id="edBrand" value="Unbranded"></div>
-            <div class="fg"><label class="fl">Size display</label><input class="fi" id="edSizeDisp" placeholder="S-5XL"></div>
-            <div class="fg"><label class="fl">Type</label><input class="fi" id="edType" placeholder="T-shirt"></div>
-            <div class="fg"><label class="fl">Size Type</label><input class="fi" id="edSizeType" placeholder="Regular"></div>
-            <div class="fg"><label class="fl">Color</label><input class="fi" id="edColor" placeholder="MultiColor"></div>
-            <div class="fg"><label class="fl">Department</label><input class="fi" id="edDept" placeholder="Unisex Adult"></div>
-            <div class="fg"><label class="fl">Fit</label><input class="fi" id="edFit" placeholder="Regular fit"></div>
-            <div class="fg"><label class="fl">Sleeve Length</label><input class="fi" id="edSleeve" placeholder="Short Sleeve"></div>
-            <div class="fg"><label class="fl">Personalize (Yes/No)</label><input class="fi" id="edPers" placeholder="Yes"></div>
-            <div class="fg"><label class="fl">Personalization Instructions</label><input class="fi" id="edPersInstr" placeholder="Please indicate..."></div>
-          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="edSpecificsGrid"></div>
         </div>
       </div>
 
@@ -417,18 +409,46 @@ const DEFAULT_PRODUCTS = {
     specifics:{brand:"Unbranded",size:"S-5XL",type:"T-shirt",sizeType:"Regular",color:"MultiColor",dept:"Unisex Adult",fit:"Regular fit",sleeve:"Short Sleeve",personalize:"Yes",persInstr:"Please indicate the size!"},
     variations:[{s:"S",p:"24.99"},{s:"M",p:"26.99"},{s:"L",p:"28.99"},{s:"XL",p:"30.99"},{s:"2XL",p:"32.99"},{s:"3XL",p:"34.99"},{s:"4XL",p:"36.99"},{s:"5XL",p:"38.99"}],
     mockups:[],desc:DEFAULT_DESC("All-Over Print 3D T-Shirt — Premium Sublimation","Edge-to-edge vivid print. Won't crack, peel, or fade.","<strong>Features:</strong> Full sublimation (front, back, sleeves), lightweight, moisture-wicking.","<strong>Material:</strong> 95% Polyester, 5% Spandex","S, M, L, XL, 2XL, 3XL, 4XL, 5XL","Full color sublimation")},
-  poster:{name:"Poster",icon:"🖼️",category:"73478",varKey:"Size",
-    specifics:{brand:"Unbranded",size:"Multiple Sizes",type:"Poster Print",sizeType:"",color:"MultiColor",dept:"",fit:"",sleeve:"",personalize:"No",persInstr:""},
+  poster_art:{name:"Art Poster",icon:"🎨",category:"28009",varKey:"Size",
+    specifics:{brand:"Unbranded",type:"Art Poster",subject:"Art Print",style:"Modern",color:"MultiColor",material:"Paper",features:"Unframed",originalReproduction:"Reproduction"},
     variations:[{s:'8"x10"',p:"9.99"},{s:'11"x14"',p:"14.99"},{s:'16"x20"',p:"19.99"},{s:'18"x24"',p:"24.99"},{s:'24"x36"',p:"34.99"}],
-    mockups:[],desc:DEFAULT_DESC("Premium Art Print / Poster","Museum-quality giclée print on archival paper.","<strong>Features:</strong> 250gsm archival matte, fade-resistant inks, ships flat.","<strong>Paper:</strong> Acid-free, lignin-free archival matte",'8"x10", 11"x14", 16"x20", 18"x24", 24"x36"',"Full color print")},
-  mug:{name:"Mug",icon:"☕",category:"30051",varKey:"Size",
-    specifics:{brand:"Unbranded",size:"11oz, 15oz",type:"Coffee Mug",sizeType:"",color:"White",dept:"",fit:"",sleeve:"",personalize:"Yes",persInstr:"Let us know if you want text customization!"},
+    mockups:[],desc:DEFAULT_DESC("Premium Art Poster — Museum Quality Print","Stunning giclée art print on archival paper. Vibrant colors, sharp detail.","<strong>Features:</strong> 250gsm archival matte, fade-resistant inks, ships flat in rigid mailer.","<strong>Paper:</strong> Acid-free, lignin-free archival matte",'8"x10", 11"x14", 16"x20", 18"x24", 24"x36"',"Full color giclée print")},
+  poster_decor:{name:"Décor Poster",icon:"🖼️",category:"41511",varKey:"Size",
+    specifics:{brand:"Unbranded",type:"Poster",theme:"Art",color:"MultiColor",room:"Living Room",material:"Paper",style:"Modern",features:"Unframed"},
+    variations:[{s:'8"x10"',p:"9.99"},{s:'11"x14"',p:"14.99"},{s:'16"x20"',p:"19.99"},{s:'18"x24"',p:"24.99"},{s:'24"x36"',p:"34.99"}],
+    mockups:[],desc:DEFAULT_DESC("Home Décor Wall Art Poster","Beautiful wall art to transform any room. Premium quality print.","<strong>Features:</strong> 250gsm matte paper, vivid fade-resistant colors, ships flat.","<strong>Material:</strong> Premium archival paper",'8"x10", 11"x14", 16"x20", 18"x24", 24"x36"',"Full color print")},
+  mug:{name:"Mug",icon:"☕",category:"20695",varKey:"Size",
+    specifics:{brand:"Unbranded",type:"Coffee Mug",color:"White",material:"Ceramic",capacity:"11 oz",features:"Dishwasher Safe, Microwave Safe",theme:"Novelty",character:""},
     variations:[{s:"11oz",p:"16.99"},{s:"15oz",p:"19.99"}],
-    mockups:[],desc:DEFAULT_DESC("Custom Ceramic Coffee Mug","Premium sublimation print, perfect gift.","<strong>Features:</strong> Professional sublimation, dishwasher & microwave safe, C-handle.","<strong>Material:</strong> High-quality white ceramic, lead-free","11oz (standard), 15oz (large)","White ceramic with full-color print")},
+    mockups:[],desc:DEFAULT_DESC("Custom Ceramic Coffee Mug","Premium sublimation print, perfect gift for any occasion.","<strong>Features:</strong> Professional sublimation, dishwasher & microwave safe, C-handle, glossy finish.","<strong>Material:</strong> High-quality white ceramic, lead-free, BPA-free","11oz (standard), 15oz (large)","White ceramic with full-color print")},
   phonecase:{name:"Phone Case",icon:"📱",category:"20349",varKey:"Compatible Model",
-    specifics:{brand:"Unbranded",size:"",type:"Fitted Case/Skin",sizeType:"",color:"MultiColor",dept:"",fit:"",sleeve:"",personalize:"No",persInstr:""},
+    specifics:{brand:"Unbranded",type:"Fitted Case/Skin",compatibleBrand:"Universal",color:"MultiColor",material:"Polycarbonate",features:"Wireless Charging Compatible, Raised Edges",designFinish:"Glossy"},
     variations:[{s:"iPhone 15",p:"19.99"},{s:"iPhone 15 Pro",p:"19.99"},{s:"iPhone 15 Pro Max",p:"21.99"},{s:"iPhone 14",p:"17.99"},{s:"iPhone 14 Pro",p:"19.99"},{s:"Samsung Galaxy S24",p:"19.99"},{s:"Samsung Galaxy S24 Ultra",p:"21.99"}],
-    mockups:[],desc:DEFAULT_DESC("Custom Phone Case — Tough Protection","Dual-layer case with stunning UV print.","<strong>Features:</strong> Polycarbonate + TPU, raised edges, wireless charging compatible.","<strong>Material:</strong> Hard polycarbonate back + flexible TPU bumper","iPhone 15/Pro/Max, 14/Pro, Samsung S24/Ultra","Full color UV print")}
+    mockups:[],desc:DEFAULT_DESC("Custom Phone Case — Tough Protection","Dual-layer case with stunning UV print. Slim profile, full protection.","<strong>Features:</strong> Polycarbonate + TPU dual-layer, raised edges for screen & camera, wireless charging compatible, precise cutouts.","<strong>Material:</strong> Hard polycarbonate back + flexible TPU bumper","iPhone 15/Pro/Max, iPhone 14/Pro, Samsung Galaxy S24/Ultra","Full color UV print")}
+};
+
+// Category presets: defines which item specifics fields to show per category
+const CATEGORY_PRESETS = {
+  "15687": {name:"T-Shirt",fields:["brand","size","type","sizeType","color","dept","fit","sleeve","personalize","persInstr","theme","pattern","material","neckline"],
+    defaults:{brand:"Unbranded",size:"S-5XL",type:"T-shirt",sizeType:"Regular",color:"MultiColor",dept:"Unisex Adult",fit:"Regular fit",sleeve:"Short Sleeve"},varKey:"US Size"},
+  "28009": {name:"Art Poster",fields:["brand","type","subject","style","color","material","features","originalReproduction"],
+    defaults:{brand:"Unbranded",type:"Art Poster",subject:"Art Print",style:"Modern",color:"MultiColor",material:"Paper",features:"Unframed",originalReproduction:"Reproduction"},varKey:"Size"},
+  "41511": {name:"Décor Poster",fields:["brand","type","theme","color","room","material","style","features"],
+    defaults:{brand:"Unbranded",type:"Poster",theme:"Art",color:"MultiColor",room:"Living Room",material:"Paper",style:"Modern",features:"Unframed"},varKey:"Size"},
+  "20695": {name:"Mug",fields:["brand","type","color","material","capacity","features","theme","character"],
+    defaults:{brand:"Unbranded",type:"Coffee Mug",color:"White",material:"Ceramic",capacity:"11 oz",features:"Dishwasher Safe, Microwave Safe",theme:"Novelty"},varKey:"Size"},
+  "20349": {name:"Phone Case",fields:["brand","type","compatibleBrand","color","material","features","designFinish"],
+    defaults:{brand:"Unbranded",type:"Fitted Case/Skin",compatibleBrand:"Universal",color:"MultiColor",material:"Polycarbonate",features:"Wireless Charging Compatible",designFinish:"Glossy"},varKey:"Compatible Model"}
+};
+
+// Human-readable labels for specifics field keys
+const FIELD_LABELS = {
+  brand:"Brand",size:"Size",type:"Type",sizeType:"Size Type",color:"Color",dept:"Department",
+  fit:"Fit",sleeve:"Sleeve Length",personalize:"Personalize",persInstr:"Personalization Instructions",
+  theme:"Theme",pattern:"Pattern",material:"Material",neckline:"Neckline",
+  subject:"Subject",style:"Style",features:"Features",originalReproduction:"Original/Reproduction",
+  room:"Room",capacity:"Capacity",character:"Character",
+  compatibleBrand:"Compatible Brand",designFinish:"Design/Finish"
 };
 
 const DEFAULT_GLOBAL = {location:"Kuala Lumpur, Malaysia",shipping:"SHIPPING",returns:"RETURN",payment:"PAYMENT",actionHeader:"*Action(SiteID=US|Country=MY|Currency=USD|Version=1193|CC=UTF-8)",aiProvider:"none",aiKey:"",aiModel:"",aiPrompt:""};
@@ -558,25 +578,50 @@ function openEditor(idOrNew){
   document.getElementById('editorTitle').textContent=P?`Sửa: ${P.icon} ${P.name}`:'Tạo product type mới';
   document.getElementById('edIcon').value=P?P.icon:'';
   document.getElementById('edName').value=P?P.name:'';
-  document.getElementById('edCat').value=P?P.category:'';
+  document.getElementById('edCat').value=P?P.category:'15687';
   document.getElementById('edVarKey').value=P?P.varKey:'US Size';
-  const sp=P?P.specifics:{brand:'Unbranded',size:'',type:'',sizeType:'',color:'',dept:'',fit:'',sleeve:'',personalize:'',persInstr:''};
-  document.getElementById('edBrand').value=sp.brand;
-  document.getElementById('edSizeDisp').value=sp.size;
-  document.getElementById('edType').value=sp.type;
-  document.getElementById('edSizeType').value=sp.sizeType;
-  document.getElementById('edColor').value=sp.color;
-  document.getElementById('edDept').value=sp.dept;
-  document.getElementById('edFit').value=sp.fit;
-  document.getElementById('edSleeve').value=sp.sleeve;
-  document.getElementById('edPers').value=sp.personalize;
-  document.getElementById('edPersInstr').value=sp.persInstr;
   editorVars=P?JSON.parse(JSON.stringify(P.variations)):[{s:'S',p:'19.99'}];
   editorMockups=P?[...P.mockups]:[];
   renderEditorVars();renderEditorMockups();
   document.getElementById('edDesc').value=P?P.desc:'';
   updateDescPreview();
+  // Render dynamic specifics fields
+  renderSpecificsFields(P?P.category:'15687', P?P.specifics:null);
   document.getElementById('editorModal').classList.add('show');
+}
+
+function onCatChange(){
+  const cat=document.getElementById('edCat').value.trim();
+  const preset=CATEGORY_PRESETS[cat];
+  if(preset){
+    document.getElementById('edVarKey').value=preset.varKey;
+    renderSpecificsFields(cat, null);
+    document.getElementById('edCatLabel').textContent='✅ '+preset.name;
+    document.getElementById('edCatLabel').style.color='var(--green)';
+  } else {
+    document.getElementById('edCatLabel').textContent='Custom category';
+    document.getElementById('edCatLabel').style.color='var(--text3)';
+  }
+}
+
+function renderSpecificsFields(catId, existingSpecifics){
+  const grid=document.getElementById('edSpecificsGrid');
+  grid.innerHTML='';
+  const preset=CATEGORY_PRESETS[catId];
+  const fields=preset?preset.fields:["brand","type","color","material","features"];
+  const defaults=preset?preset.defaults:{};
+  
+  fields.forEach(key=>{
+    const label=FIELD_LABELS[key]||key;
+    const val=existingSpecifics?existingSpecifics[key]||'':defaults[key]||'';
+    const div=document.createElement('div');
+    div.className='fg';
+    div.innerHTML=`<label class="fl">${label}</label><input class="fi" data-spec="${key}" value="${val}" placeholder="${defaults[key]||''}">`;
+    grid.appendChild(div);
+  });
+  
+  document.getElementById('edCatLabel').textContent=preset?'✅ '+preset.name:'Custom';
+  document.getElementById('edCatLabel').style.color=preset?'var(--green)':'var(--text3)';
 }
 
 function closeEditor(){document.getElementById('editorModal').classList.remove('show')}
@@ -615,8 +660,10 @@ function updateDescPreview(){
 
 function useDefaultDesc(){
   const name=document.getElementById('edName').value||'Product';
-  const type=document.getElementById('edType').value||'Item';
-  document.getElementById('edDesc').value=DEFAULT_DESC(name,"Premium quality, perfect for any occasion.","<strong>Features:</strong> High quality print, durable, comfortable.","<strong>Material:</strong> Premium materials",document.getElementById('edSizeDisp').value||'Multiple sizes','Multiple colors');
+  // Get size from dynamic specifics if available
+  const sizeEl=document.querySelector('#edSpecificsGrid [data-spec="size"]');
+  const sizeVal=sizeEl?sizeEl.value:'Multiple sizes';
+  document.getElementById('edDesc').value=DEFAULT_DESC(name,"Premium quality, perfect for any occasion.","<strong>Features:</strong> High quality print, durable, comfortable.","<strong>Material:</strong> Premium materials",sizeVal||'Multiple sizes','Multiple colors');
   updateDescPreview();
 }
 
@@ -624,11 +671,16 @@ function saveProduct(){
   const name=document.getElementById('edName').value.trim();
   if(!name){toast('Nhập tên product type!','er');return}
   const key=editingId||name.toLowerCase().replace(/[^a-z0-9]/g,'_')+'_'+Date.now().toString(36);
+  // Read dynamic specifics
+  const specifics={};
+  document.querySelectorAll('#edSpecificsGrid [data-spec]').forEach(el=>{
+    specifics[el.dataset.spec]=el.value;
+  });
   products[key]={
     name,icon:document.getElementById('edIcon').value||'📦',
     category:document.getElementById('edCat').value,
     varKey:document.getElementById('edVarKey').value||'US Size',
-    specifics:{brand:document.getElementById('edBrand').value,size:document.getElementById('edSizeDisp').value,type:document.getElementById('edType').value,sizeType:document.getElementById('edSizeType').value,color:document.getElementById('edColor').value,dept:document.getElementById('edDept').value,fit:document.getElementById('edFit').value,sleeve:document.getElementById('edSleeve').value,personalize:document.getElementById('edPers').value,persInstr:document.getElementById('edPersInstr').value},
+    specifics:specifics,
     variations:editorVars.filter(v=>v.s),
     mockups:editorMockups.filter(u=>u),
     desc:document.getElementById('edDesc').value
@@ -876,17 +928,65 @@ async function startProcess(){
 function genCSV(){
   const P=products[curType];if(!P)return[HDRS];
   HDRS[0]=globalConfig.actionHeader;
-  const rows=[HDRS];const sizeList=P.variations.map(v=>v.s).join(';');
+  
+  // Map specifics field keys to CSV column header names
+  const SPEC_TO_COL={
+    brand:'*C:Brand',size:'*C:Size',type:'*C:Type',sizeType:'*C:Size Type',
+    color:'*C:Color',dept:'*C:Department',theme:'C:Theme',fit:'C:Fit',
+    character:'C:Character',sleeve:'C:Sleeve Length',pattern:'C:Pattern',
+    neckline:'C:Neckline',material:'C:Material',personalize:'C:Personalize',
+    persInstr:'C:Personalization Instructions',features:'C:Features',
+    subject:'C:Subject',style:'C:Style',originalReproduction:'C:Original/Reproduction',
+    room:'C:Room',capacity:'C:Capacity',compatibleBrand:'C:Compatible Brand',
+    designFinish:'C:Design/Finish'
+  };
+  
+  // Build dynamic headers: base headers + any extra C: columns not in default
+  const baseHdrs=[...HDRS];
+  const extraCols={};
+  if(P.specifics){
+    Object.entries(P.specifics).forEach(([key,val])=>{
+      if(!val)return;
+      const colName=SPEC_TO_COL[key]||('C:'+FIELD_LABELS[key]||key);
+      const idx=baseHdrs.indexOf(colName);
+      if(idx===-1){
+        // Not in default headers, add as extra column
+        extraCols[key]={name:colName,idx:baseHdrs.length};
+        baseHdrs.push(colName);
+      }
+    });
+  }
+  const totalCols=baseHdrs.length;
+  
+  const rows=[baseHdrs];const sizeList=P.variations.map(v=>v.s).join(';');
   for(const l of listings){
     if(l.status!=='ok')continue;
-    const p=new Array(NC).fill('');
+    const p=new Array(totalCols).fill('');
     p[0]='Add';p[2]=P.category;p[4]=l.title;p[7]=P.varKey+'='+sizeList;p[8]='1000';
-    const sp=P.specifics;p[9]=sp.brand;p[10]=sp.size;p[11]=sp.type;p[12]=sp.sizeType;p[13]=sp.color;p[14]=sp.dept;p[16]=sp.fit;p[18]=sp.sleeve;p[29]=sp.personalize;p[37]=sp.persInstr;
+    
+    // Fill specifics dynamically
+    if(P.specifics){
+      Object.entries(P.specifics).forEach(([key,val])=>{
+        if(!val)return;
+        const colName=SPEC_TO_COL[key]||('C:'+FIELD_LABELS[key]||key);
+        let idx=HDRS.indexOf(colName);
+        if(idx===-1 && extraCols[key]) idx=extraCols[key].idx;
+        if(idx!==-1) p[idx]=val;
+      });
+    }
+    
     p[40]=[l.cfUrl,...P.mockups].filter(u=>u).join(' | ');
     p[43]=P.desc;p[44]='FixedPrice';p[45]='GTC';p[53]=globalConfig.location;
-    p[67]=globalConfig.shipping;p[68]=globalConfig.returns;p[69]=globalConfig.payment;
+    // Business policies - find correct indices in potentially extended headers
+    const shipIdx=baseHdrs.indexOf('ShippingProfileName');
+    const retIdx=baseHdrs.indexOf('ReturnProfileName');
+    const payIdx=baseHdrs.indexOf('PaymentProfileName');
+    if(shipIdx!==-1)p[shipIdx]=globalConfig.shipping;
+    if(retIdx!==-1)p[retIdx]=globalConfig.returns;
+    if(payIdx!==-1)p[payIdx]=globalConfig.payment;
     rows.push(p);
-    P.variations.forEach(v=>{const vr=new Array(NC).fill('');vr[6]='Variation';vr[7]=P.varKey+'='+v.s;vr[46]=v.p;vr[51]='1';rows.push(vr)});
+    
+    P.variations.forEach(v=>{const vr=new Array(totalCols).fill('');vr[6]='Variation';vr[7]=P.varKey+'='+v.s;vr[46]=v.p;vr[51]='1';rows.push(vr)});
   }
   return rows;
 }
