@@ -8,24 +8,24 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#f8f9fb;--card:#ffffff;--card2:#f1f3f5;--border:#e2e5ea;--accent:#2563eb;--accent2:#4f46e5;--green:#059669;--orange:#d97706;--red:#dc2626;--text:#1e293b;--text2:#64748b;--text3:#94a3b8;--radius:8px}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:16px}
 button{font-family:inherit}
 
 /* HEADER */
 .hdr{background:linear-gradient(135deg,#eef2ff,#f8fafc,#eef2ff);border-bottom:1px solid var(--border);padding:12px 0}
 .hdr-in{max-width:1440px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .logo{display:flex;align-items:center;gap:10px}
-.logo-i{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px}
-.logo h1{font-size:17px;font-weight:700;background:linear-gradient(135deg,#1e293b,#475569);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.logo p{font-size:10px;color:var(--text2)}
+.logo-i{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px}
+.logo h1{font-size:19px;font-weight:700;background:linear-gradient(135deg,#1e293b,#475569);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo p{font-size:12px;color:var(--text2)}
 .hdr-nav{display:flex;gap:6px}
-.nav-btn{padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text2);transition:all .15s;display:flex;align-items:center;gap:5px}
+.nav-btn{padding:8px 16px;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text2);transition:all .15s;display:flex;align-items:center;gap:5px}
 .nav-btn:hover{border-color:var(--accent);color:var(--text)}
 .nav-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
 .sts{display:flex;gap:10px}
-.st{text-align:center;padding:4px 10px;background:#fff;border-radius:6px;border:1px solid var(--border)}
-.st .n{font-size:16px;font-weight:700;color:var(--accent)}
-.st .l{font-size:8px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.st{text-align:center;padding:5px 12px;background:#fff;border-radius:6px;border:1px solid var(--border)}
+.st .n{font-size:20px;font-weight:700;color:var(--accent)}
+.st .l{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
 
 /* PAGES */
 .page{display:none;max-width:1440px;margin:0 auto;padding:16px 20px}
@@ -34,18 +34,18 @@ button{font-family:inherit}
 /* CARDS */
 .card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .card-h{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-h h2{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
-.card-b{padding:14px}
+.card-h h2{font-size:16px;font-weight:600;display:flex;align-items:center;gap:6px}
+.card-b{padding:16px}
 
 /* FORM ELEMENTS */
-.fg{margin-bottom:10px}
-.fl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:3px;display:block}
-.fi{width:100%;padding:8px 11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px}
+.fg{margin-bottom:12px}
+.fl{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:4px;display:block}
+.fi{width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px}
 .fi:focus{outline:none;border-color:var(--accent)}
 textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 
 /* BUTTONS */
-.btn{padding:9px 18px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn{padding:10px 20px;border:none;border-radius:7px;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
 .btn-p{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
 .btn-p:hover{box-shadow:0 3px 12px rgba(59,130,246,.25)}
 .btn-g{background:linear-gradient(135deg,var(--green),#059669);color:#fff}
@@ -55,31 +55,31 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 .btn-o:hover{border-color:var(--accent);color:var(--text)}
 .btn-d{background:transparent;border:1px solid rgba(239,68,68,.3);color:var(--red)}
 .btn-d:hover{background:rgba(239,68,68,.1)}
-.btn-sm{padding:6px 12px;font-size:12px}
+.btn-sm{padding:7px 14px;font-size:13px}
 .btn-full{width:100%;justify-content:center}
 
 /* GRID */
-.grid2{display:grid;grid-template-columns:1fr 340px;gap:16px}
+.grid2{display:grid;grid-template-columns:1fr 360px;gap:16px}
 .grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
 @media(max-width:900px){.grid2{grid-template-columns:1fr}.sts{display:none}}
 
 /* PRODUCT TYPE CARDS */
-.pt-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .15s;position:relative}
+.pt-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;transition:border-color .15s;position:relative}
 .pt-card:hover{border-color:var(--accent)}
-.pt-card .ico{font-size:28px;margin-bottom:8px}
-.pt-card .name{font-size:16px;font-weight:600;margin-bottom:4px}
-.pt-card .meta{font-size:12px;color:var(--text2);line-height:1.5}
+.pt-card .ico{font-size:32px;margin-bottom:8px}
+.pt-card .name{font-size:18px;font-weight:600;margin-bottom:4px}
+.pt-card .meta{font-size:14px;color:var(--text2);line-height:1.5}
 .pt-card .acts{display:flex;gap:5px;margin-top:12px;flex-wrap:wrap}
-.pt-card .badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;background:rgba(79,70,229,.08);color:var(--accent2)}
+.pt-card .badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:12px;font-weight:600;background:rgba(79,70,229,.08);color:var(--accent2)}
 
 /* TABS */
 .tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
-.tab{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text2);transition:all .15s;display:flex;align-items:center;gap:5px}
+.tab{padding:9px 18px;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text2);transition:all .15s;display:flex;align-items:center;gap:5px}
 .tab:hover{border-color:var(--accent);color:var(--text)}
 .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
 
 /* PASTE AREA */
-.paste{width:100%;min-height:200px;background:#fff;border:2px dashed var(--border);border-radius:8px;padding:14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;resize:vertical}
+.paste{width:100%;min-height:200px;background:#fff;border:2px dashed var(--border);border-radius:8px;padding:14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.8;resize:vertical}
 .paste:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
 .paste::placeholder{color:var(--text3)}
 
@@ -87,22 +87,22 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 .prog{margin-top:12px;display:none}
 .pbar-bg{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
 .pbar{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:3px;transition:width .3s;width:0%}
-.plog{margin-top:6px;max-height:100px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.5;padding:8px;background:var(--bg);border-radius:5px;border:1px solid var(--border)}
+.plog{margin-top:6px;max-height:120px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text2);line-height:1.5;padding:8px;background:var(--bg);border-radius:5px;border:1px solid var(--border)}
 
 /* PREVIEW TABLE */
-.ptbl{width:100%;border-collapse:collapse;font-size:12px}
-.ptbl th{text-align:left;padding:6px 8px;background:var(--bg);color:var(--text2);font-weight:600;font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border)}
-.ptbl td{padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptbl{width:100%;border-collapse:collapse;font-size:14px}
+.ptbl th{text-align:left;padding:7px 10px;background:var(--bg);color:var(--text2);font-weight:600;font-size:12px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.ptbl td{padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text2);max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* MOCKUP PREVIEW */
 .mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-top:6px}
 .mk-thumb{width:100%;aspect-ratio:1;border-radius:6px;border:1px solid var(--border);object-fit:cover;background:var(--bg)}
 .mk-item{display:flex;flex-direction:column;gap:3px}
-.mk-item label{font-size:10px;color:var(--text3);text-align:center}
+.mk-item label{font-size:12px;color:var(--text3);text-align:center}
 
 /* DESC EDITOR */
 .desc-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
-.desc-code{width:100%;min-height:300px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;resize:vertical}
+.desc-code{width:100%;min-height:300px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.5;resize:vertical}
 .desc-code:focus{outline:none;border-color:var(--accent)}
 .desc-preview{border:1px solid var(--border);border-radius:6px;overflow:hidden;background:#fff}
 .desc-preview iframe{width:100%;min-height:300px;border:none}
@@ -112,19 +112,19 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;display:flex;align-items:center;justify-content:center;display:none}
 .modal-bg.show{display:flex}
 .modal{background:#fff;border:1px solid var(--border);border-radius:12px;width:90%;max-width:900px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.12)}
-.modal-h{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.modal-h h2{font-size:15px;font-weight:600}
-.modal-b{padding:18px}
-.modal-close{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:4px 8px}
+.modal-h{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-h h2{font-size:17px;font-weight:600}
+.modal-b{padding:20px}
+.modal-close{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;padding:4px 8px}
 .modal-close:hover{color:var(--text)}
 
 /* VARIATION EDITOR */
-.var-row{display:flex;gap:6px;align-items:center;margin-bottom:4px}
+.var-row{display:flex;gap:6px;align-items:center;margin-bottom:5px}
 .var-row input{flex:1}
 .var-row .btn{flex-shrink:0}
 
 /* TOAST */
-.toast{position:fixed;bottom:16px;right:16px;padding:12px 20px;border-radius:7px;font-weight:600;font-size:13px;z-index:200;animation:su .3s ease;display:none}
+.toast{position:fixed;bottom:16px;right:16px;padding:14px 22px;border-radius:7px;font-weight:600;font-size:15px;z-index:200;animation:su .3s ease;display:none}
 .t-ok{background:var(--green);color:#fff;box-shadow:0 4px 16px rgba(5,150,105,.25)}
 .t-er{background:var(--red);color:#fff;box-shadow:0 4px 16px rgba(220,38,38,.25)}
 @keyframes su{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -145,6 +145,7 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
     </div>
     <div class="hdr-nav">
       <button class="nav-btn active" onclick="showPage('generate')" id="navGen">📦 Generate CSV</button>
+      <button class="nav-btn" onclick="showPage('images')" id="navImg">🖼️ Image Converter</button>
       <button class="nav-btn" onclick="showPage('products')" id="navProd">🛍️ Product Types</button>
       <button class="nav-btn" onclick="showPage('settings')" id="navSet">⚙️ Settings</button>
     </div>
@@ -206,7 +207,48 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
   </div>
 </div>
 
-<!-- PAGE 2: PRODUCT TYPES MANAGER -->
+<!-- PAGE 2: IMAGE CONVERTER -->
+<div class="page" id="pageImages">
+  <div style="max-width:900px;margin:0 auto">
+    <div class="card">
+      <div class="card-h">
+        <h2>🖼️ Chuyển đổi ảnh → Cloudflare</h2>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-o btn-sm" onclick="clearImgConverter()">Clear</button>
+        </div>
+      </div>
+      <div class="card-b">
+        <p style="font-size:14px;color:var(--text2);margin-bottom:12px">Paste link ảnh gốc (mỗi dòng 1 link) → upload lên Cloudflare → nhận link CDN mới. Dùng cho ảnh mockup phụ hoặc bất kỳ ảnh nào.</p>
+        <textarea class="paste" id="imgInput" style="min-height:180px" placeholder="Paste link ảnh gốc vào đây, mỗi dòng 1 link:
+
+https://example.com/mockup-back.jpg
+https://example.com/size-chart.png
+https://example.com/lifestyle-photo.jpg
+https://i.imgur.com/abc123.png" spellcheck="false"></textarea>
+
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-p" id="btnImgConvert" onclick="convertImages()">☁️ Upload lên Cloudflare</button>
+          <button class="btn btn-o" id="btnImgCopy" onclick="copyImgResults()" style="display:none">📋 Copy kết quả</button>
+        </div>
+
+        <div class="prog" id="imgProg" style="margin-top:12px">
+          <div class="pbar-bg"><div class="pbar" id="imgPb"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-top:4px"><span id="imgPl"></span><span id="imgPp">0%</span></div>
+        </div>
+
+        <div id="imgResults" style="display:none;margin-top:16px">
+          <h3 style="font-size:15px;margin-bottom:8px;color:var(--text)">Kết quả</h3>
+          <table class="ptbl" id="imgTable">
+            <thead><tr><th style="width:40px">#</th><th>Link gốc</th><th>→</th><th>Link Cloudflare</th><th>Status</th></tr></thead>
+            <tbody id="imgBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3: PRODUCT TYPES MANAGER -->
 <div class="page" id="pageProducts">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
     <h2 style="font-size:18px;font-weight:600">🛍️ Product Types</h2>
@@ -434,16 +476,8 @@ function init(){
 function showPage(p){
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
-  document.getElementById('page'+p.charAt(0).toUpperCase()+p.slice(1)).classList.add('active');
-  document.getElementById('nav'+p.charAt(0).toUpperCase()+p.slice(1,3).charAt(0).toUpperCase()+p.slice(2)).classList.add('active');
-  ({generate:()=>document.getElementById('navGen'),products:()=>document.getElementById('navProd'),settings:()=>document.getElementById('navSet')})[p]().classList.add('active');
-  if(p==='products')renderPTGrid();
-}
-function showPage(p){
-  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
-  const pages={generate:'pageGenerate',products:'pageProducts',settings:'pageSettings'};
-  const navs={generate:'navGen',products:'navProd',settings:'navSet'};
+  const pages={generate:'pageGenerate',images:'pageImages',products:'pageProducts',settings:'pageSettings'};
+  const navs={generate:'navGen',images:'navImg',products:'navProd',settings:'navSet'};
   document.getElementById(pages[p]).classList.add('active');
   document.getElementById(navs[p]).classList.add('active');
   if(p==='products')renderPTGrid();
@@ -863,6 +897,76 @@ function downloadCSV(rows){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download=`${curType}_${listings.filter(l=>l.status==='ok').length}listings_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
+}
+
+// ================================================================
+// IMAGE CONVERTER
+// ================================================================
+async function convertImages(){
+  const raw=document.getElementById('imgInput').value.trim();
+  if(!raw){toast('Paste link ảnh vào!','er');return}
+  const urls=raw.split('\n').map(l=>l.trim()).filter(l=>l&&l.startsWith('http'));
+  if(!urls.length){toast('Không tìm thấy URL hợp lệ!','er');return}
+
+  const btn=document.getElementById('btnImgConvert');btn.disabled=true;btn.textContent='⏳ Uploading...';
+  const prog=document.getElementById('imgProg');prog.style.display='block';
+  const pb=document.getElementById('imgPb'),pl=document.getElementById('imgPl'),pp=document.getElementById('imgPp');
+  const results=document.getElementById('imgResults');results.style.display='block';
+  const tbody=document.getElementById('imgBody');tbody.innerHTML='';
+
+  let ok=0,fail=0;
+  for(let i=0;i<urls.length;i++){
+    const url=urls[i];
+    pl.textContent=`Uploading ${i+1}/${urls.length}...`;
+    pb.style.width=`${(i+1)/urls.length*100}%`;
+    pp.textContent=`${Math.round((i+1)/urls.length*100)}%`;
+
+    const tr=document.createElement('tr');
+    let cfUrl='',status='';
+
+    if(url.includes('imagedelivery.net')){
+      cfUrl=url;status='✅ Đã là CF';ok++;
+    } else {
+      try{
+        cfUrl=await uploadToCF(url);
+        status='✅ OK';ok++;
+      }catch(e){
+        cfUrl='';status='❌ '+e.message.substring(0,30);fail++;
+      }
+    }
+
+    tr.innerHTML=`<td style="font-size:13px">${i+1}</td><td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${url.substring(0,50)}...</td><td>→</td><td style="font-size:12px;max-width:250px;overflow:hidden;text-overflow:ellipsis;color:${cfUrl?'var(--green)':'var(--red)'}">${cfUrl||'—'}</td><td>${status}</td>`;
+    tbody.appendChild(tr);
+
+    await new Promise(r=>setTimeout(r,200));
+  }
+
+  pl.textContent=`✅ Done: ${ok} OK, ${fail} lỗi`;
+  btn.disabled=false;btn.textContent='☁️ Upload lên Cloudflare';
+  document.getElementById('btnImgCopy').style.display='inline-flex';
+  toast(`✅ ${ok} ảnh uploaded!`,'ok');
+}
+
+function copyImgResults(){
+  const rows=document.querySelectorAll('#imgBody tr');
+  const lines=[];
+  rows.forEach(tr=>{
+    const cells=tr.querySelectorAll('td');
+    if(cells.length>=4){
+      const cfUrl=cells[3].textContent.trim();
+      if(cfUrl&&cfUrl!=='—')lines.push(cfUrl);
+    }
+  });
+  if(lines.length){
+    navigator.clipboard.writeText(lines.join('\n')).then(()=>toast('📋 Đã copy '+lines.length+' links!','ok'));
+  }else{toast('Không có link để copy','er')}
+}
+
+function clearImgConverter(){
+  document.getElementById('imgInput').value='';
+  document.getElementById('imgResults').style.display='none';
+  document.getElementById('imgProg').style.display='none';
+  document.getElementById('btnImgCopy').style.display='none';
 }
 
 // ================================================================
