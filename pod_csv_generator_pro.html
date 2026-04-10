@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POD CSV Generator Pro</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f8f9fb;--card:#ffffff;--card2:#f1f3f5;--border:#e2e5ea;--accent:#2563eb;--accent2:#4f46e5;--green:#059669;--orange:#d97706;--red:#dc2626;--text:#1e293b;--text2:#64748b;--text3:#94a3b8;--radius:8px}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+button{font-family:inherit}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#eef2ff,#f8fafc,#eef2ff);border-bottom:1px solid var(--border);padding:12px 0}
+.hdr-in{max-width:1440px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-i{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px}
+.logo h1{font-size:17px;font-weight:700;background:linear-gradient(135deg,#1e293b,#475569);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo p{font-size:10px;color:var(--text2)}
+.hdr-nav{display:flex;gap:6px}
+.nav-btn{padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text2);transition:all .15s;display:flex;align-items:center;gap:5px}
+.nav-btn:hover{border-color:var(--accent);color:var(--text)}
+.nav-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.sts{display:flex;gap:10px}
+.st{text-align:center;padding:4px 10px;background:#fff;border-radius:6px;border:1px solid var(--border)}
+.st .n{font-size:16px;font-weight:700;color:var(--accent)}
+.st .l{font-size:8px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+
+/* PAGES */
+.page{display:none;max-width:1440px;margin:0 auto;padding:16px 20px}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card-h{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-h h2{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+.card-b{padding:14px}
+
+/* FORM ELEMENTS */
+.fg{margin-bottom:10px}
+.fl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:3px;display:block}
+.fi{width:100%;padding:8px 11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px}
+.fi:focus{outline:none;border-color:var(--accent)}
+textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-p{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-p:hover{box-shadow:0 3px 12px rgba(59,130,246,.25)}
+.btn-g{background:linear-gradient(135deg,var(--green),#059669);color:#fff}
+.btn-g:hover{box-shadow:0 3px 12px rgba(16,185,129,.25)}
+.btn-g:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+.btn-o{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-o:hover{border-color:var(--accent);color:var(--text)}
+.btn-d{background:transparent;border:1px solid rgba(239,68,68,.3);color:var(--red)}
+.btn-d:hover{background:rgba(239,68,68,.1)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-full{width:100%;justify-content:center}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 340px;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}.sts{display:none}}
+
+/* PRODUCT TYPE CARDS */
+.pt-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .15s;position:relative}
+.pt-card:hover{border-color:var(--accent)}
+.pt-card .ico{font-size:28px;margin-bottom:8px}
+.pt-card .name{font-size:16px;font-weight:600;margin-bottom:4px}
+.pt-card .meta{font-size:12px;color:var(--text2);line-height:1.5}
+.pt-card .acts{display:flex;gap:5px;margin-top:12px;flex-wrap:wrap}
+.pt-card .badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;background:rgba(79,70,229,.08);color:var(--accent2)}
+
+/* TABS */
+.tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.tab{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text2);transition:all .15s;display:flex;align-items:center;gap:5px}
+.tab:hover{border-color:var(--accent);color:var(--text)}
+.tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+
+/* PASTE AREA */
+.paste{width:100%;min-height:200px;background:#fff;border:2px dashed var(--border);border-radius:8px;padding:14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;resize:vertical}
+.paste:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.paste::placeholder{color:var(--text3)}
+
+/* PROGRESS */
+.prog{margin-top:12px;display:none}
+.pbar-bg{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.pbar{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:3px;transition:width .3s;width:0%}
+.plog{margin-top:6px;max-height:100px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.5;padding:8px;background:var(--bg);border-radius:5px;border:1px solid var(--border)}
+
+/* PREVIEW TABLE */
+.ptbl{width:100%;border-collapse:collapse;font-size:12px}
+.ptbl th{text-align:left;padding:6px 8px;background:var(--bg);color:var(--text2);font-weight:600;font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.ptbl td{padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* MOCKUP PREVIEW */
+.mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-top:6px}
+.mk-thumb{width:100%;aspect-ratio:1;border-radius:6px;border:1px solid var(--border);object-fit:cover;background:var(--bg)}
+.mk-item{display:flex;flex-direction:column;gap:3px}
+.mk-item label{font-size:10px;color:var(--text3);text-align:center}
+
+/* DESC EDITOR */
+.desc-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.desc-code{width:100%;min-height:300px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;resize:vertical}
+.desc-code:focus{outline:none;border-color:var(--accent)}
+.desc-preview{border:1px solid var(--border);border-radius:6px;overflow:hidden;background:#fff}
+.desc-preview iframe{width:100%;min-height:300px;border:none}
+@media(max-width:900px){.desc-wrap{grid-template-columns:1fr}}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;display:flex;align-items:center;justify-content:center;display:none}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border:1px solid var(--border);border-radius:12px;width:90%;max-width:900px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.12)}
+.modal-h{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-h h2{font-size:15px;font-weight:600}
+.modal-b{padding:18px}
+.modal-close{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:4px 8px}
+.modal-close:hover{color:var(--text)}
+
+/* VARIATION EDITOR */
+.var-row{display:flex;gap:6px;align-items:center;margin-bottom:4px}
+.var-row input{flex:1}
+.var-row .btn{flex-shrink:0}
+
+/* TOAST */
+.toast{position:fixed;bottom:16px;right:16px;padding:12px 20px;border-radius:7px;font-weight:600;font-size:13px;z-index:200;animation:su .3s ease;display:none}
+.t-ok{background:var(--green);color:#fff;box-shadow:0 4px 16px rgba(5,150,105,.25)}
+.t-er{background:var(--red);color:#fff;box-shadow:0 4px 16px rgba(220,38,38,.25)}
+@keyframes su{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* COLLAPSIBLE */
+.ct{cursor:pointer;user-select:none}.ct::after{content:'▾';margin-left:5px;font-size:9px}.ct.cc::after{transform:rotate(-90deg)}
+.ccb{overflow:hidden;transition:max-height .3s}.ccb.hid{max-height:0!important;padding-top:0!important;padding-bottom:0!important}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-in">
+    <div class="logo">
+      <div class="logo-i">⚡</div>
+      <div><h1>POD CSV Generator Pro</h1><p>Quản lý product types + Generate eBay CSV</p></div>
+    </div>
+    <div class="hdr-nav">
+      <button class="nav-btn active" onclick="showPage('generate')" id="navGen">📦 Generate CSV</button>
+      <button class="nav-btn" onclick="showPage('products')" id="navProd">🛍️ Product Types</button>
+      <button class="nav-btn" onclick="showPage('settings')" id="navSet">⚙️ Settings</button>
+    </div>
+    <div class="sts">
+      <div class="st"><div class="n" id="sL">0</div><div class="l">Listings</div></div>
+      <div class="st"><div class="n" id="sR">0</div><div class="l">Rows</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 1: GENERATE CSV -->
+<div class="page active" id="pageGenerate">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-h">
+          <h2>📋 Nhập dữ liệu</h2>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-o btn-sm" onclick="loadSample()">Sample</button>
+            <button class="btn btn-o btn-sm" onclick="clearInput()">Clear</button>
+          </div>
+        </div>
+        <div class="card-b">
+          <div class="tabs" id="genTabs"></div>
+          <textarea class="paste" id="inputArea" placeholder="Chọn product type → paste Title|Link ảnh gốc" spellcheck="false"></textarea>
+          <div style="margin-top:10px"><button class="btn btn-g btn-full" id="btnGo" onclick="startProcess()" disabled>⚡ Upload ảnh & Generate CSV</button></div>
+          <div class="prog" id="pw">
+            <div class="pbar-bg"><div class="pbar" id="pb"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-top:3px"><span id="pl"></span><span id="pp">0%</span></div>
+            <div class="plog" id="plog"></div>
+          </div>
+          <div id="prevSec" style="display:none;margin-top:12px">
+            <table class="ptbl"><thead><tr><th>Status</th><th>Title</th><th>Image</th></tr></thead><tbody id="prevBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <!-- CF -->
+      <div class="card">
+        <div class="card-h"><h2>☁️ Cloudflare</h2></div>
+        <div class="card-b">
+          <div class="fg"><label class="fl">Account ID</label><input class="fi" id="cfAid" placeholder="32 ký tự hex"></div>
+          <div class="fg"><label class="fl">API Token</label><input class="fi" id="cfTok" type="password" placeholder="API Token"></div>
+          <button class="btn btn-o btn-sm btn-full" onclick="testCF()">🧪 Test kết nối</button>
+        </div>
+      </div>
+      <!-- Current product info -->
+      <div class="card">
+        <div class="card-h"><h2 id="curProdTitle">📌 Product info</h2></div>
+        <div class="card-b" id="curProdInfo" style="font-size:11px;color:var(--text2);line-height:1.6"></div>
+      </div>
+      <!-- Mockup preview -->
+      <div class="card">
+        <div class="card-h"><h2 class="ct" onclick="toggleC(this)">🖼️ Mockup preview</h2></div>
+        <div class="card-b ccb" id="mkPreview"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2: PRODUCT TYPES MANAGER -->
+<div class="page" id="pageProducts">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h2 style="font-size:18px;font-weight:600">🛍️ Product Types</h2>
+    <button class="btn btn-p" onclick="openEditor('new')">+ Tạo product type mới</button>
+  </div>
+  <div class="grid3" id="ptGrid"></div>
+</div>
+
+<!-- PAGE 3: SETTINGS -->
+<div class="page" id="pageSettings">
+  <div style="max-width:600px">
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:16px">⚙️ Cài đặt chung</h2>
+    <div class="card">
+      <div class="card-h"><h2>🌐 Listing defaults</h2></div>
+      <div class="card-b">
+        <div class="fg"><label class="fl">Location</label><input class="fi" id="gLoc" value=""></div>
+        <div class="fg"><label class="fl">Shipping Profile</label><input class="fi" id="gShip" value=""></div>
+        <div class="fg"><label class="fl">Return Profile</label><input class="fi" id="gRet" value=""></div>
+        <div class="fg"><label class="fl">Payment Profile</label><input class="fi" id="gPay" value=""></div>
+        <div class="fg"><label class="fl">Action Header</label><input class="fi" id="gAct" value="" style="font-size:9px"></div>
+        <button class="btn btn-p btn-sm" onclick="saveGlobal()">💾 Lưu cài đặt</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="card-h"><h2>🤖 AI Title Rewrite</h2></div>
+      <div class="card-b">
+        <p style="font-size:10px;color:var(--text2);margin-bottom:8px">AI tự rewrite title chuẩn SEO eBay (max 80 ký tự) khi Generate CSV</p>
+        <div class="fg">
+          <label class="fl">AI Provider</label>
+          <select class="fi" id="aiProvider" onchange="toggleAIFields()" style="font-family:'DM Sans',sans-serif">
+            <option value="none">Tắt — không rewrite</option>
+            <option value="claude">Claude (Anthropic)</option>
+            <option value="openai">OpenAI (GPT)</option>
+            <option value="gemini">Gemini (Google)</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">API Key</label><input class="fi" id="aiKey" type="password" placeholder="API Key cho AI provider đã chọn"></div>
+        <div class="fg"><label class="fl">Model</label><input class="fi" id="aiModel" placeholder="Tự điền khi chọn provider"></div>
+        <div class="fg">
+          <label class="fl">Custom prompt (tùy chỉnh cách rewrite)</label>
+          <textarea class="fi" id="aiPrompt" rows="4" style="font-family:'DM Sans',sans-serif;font-size:11px">Rewrite this product title for eBay SEO. Rules:
+- Maximum 80 characters strictly
+- Include key search terms buyers would use
+- Put most important keywords first
+- Include product type (T-Shirt, Mug, Poster, etc.)
+- Add relevant descriptors (Gift, Funny, Vintage, Custom, etc.)
+- Do NOT use ALL CAPS words
+- Do NOT use special characters or emojis
+- Return ONLY the new title, nothing else
+
+Product type: {{PRODUCT_TYPE}}
+Original title: {{TITLE}}</textarea>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-o btn-sm" onclick="testAI()">🧪 Test với 1 title</button>
+          <button class="btn btn-p btn-sm" onclick="saveAI()">💾 Lưu AI config</button>
+        </div>
+        <div id="aiTestResult" style="margin-top:8px;font-size:11px;color:var(--text2);display:none"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="card-h"><h2>🗑️ Dữ liệu</h2></div>
+      <div class="card-b">
+        <p style="font-size:11px;color:var(--text2);margin-bottom:8px">Export/Import toàn bộ config (product types, settings, CF credentials)</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-o btn-sm" onclick="exportConfig()">📤 Export JSON</button>
+          <button class="btn btn-o btn-sm" onclick="document.getElementById('importFile').click()">📥 Import JSON</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importConfig(event)">
+          <button class="btn btn-d btn-sm" onclick="resetAll()">🗑️ Reset tất cả</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PRODUCT TYPE EDITOR -->
+<div class="modal-bg" id="editorModal">
+  <div class="modal">
+    <div class="modal-h">
+      <h2 id="editorTitle">Tạo product type mới</h2>
+      <button class="modal-close" onclick="closeEditor()">✕</button>
+    </div>
+    <div class="modal-b">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fg"><label class="fl">Icon (emoji)</label><input class="fi" id="edIcon" placeholder="👕" maxlength="4"></div>
+        <div class="fg"><label class="fl">Tên product type</label><input class="fi" id="edName" placeholder="T-Shirt 2D"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fg"><label class="fl">eBay Category ID</label><input class="fi" id="edCat" placeholder="15687"></div>
+        <div class="fg"><label class="fl">Variation Key</label><input class="fi" id="edVarKey" placeholder="US Size, Size, Compatible Model..."></div>
+      </div>
+
+      <!-- Item Specifics -->
+      <div class="card" style="margin:12px 0">
+        <div class="card-h"><h2>📝 Item specifics</h2></div>
+        <div class="card-b">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg"><label class="fl">Brand</label><input class="fi" id="edBrand" value="Unbranded"></div>
+            <div class="fg"><label class="fl">Size display</label><input class="fi" id="edSizeDisp" placeholder="S-5XL"></div>
+            <div class="fg"><label class="fl">Type</label><input class="fi" id="edType" placeholder="T-shirt"></div>
+            <div class="fg"><label class="fl">Size Type</label><input class="fi" id="edSizeType" placeholder="Regular"></div>
+            <div class="fg"><label class="fl">Color</label><input class="fi" id="edColor" placeholder="MultiColor"></div>
+            <div class="fg"><label class="fl">Department</label><input class="fi" id="edDept" placeholder="Unisex Adult"></div>
+            <div class="fg"><label class="fl">Fit</label><input class="fi" id="edFit" placeholder="Regular fit"></div>
+            <div class="fg"><label class="fl">Sleeve Length</label><input class="fi" id="edSleeve" placeholder="Short Sleeve"></div>
+            <div class="fg"><label class="fl">Personalize (Yes/No)</label><input class="fi" id="edPers" placeholder="Yes"></div>
+            <div class="fg"><label class="fl">Personalization Instructions</label><input class="fi" id="edPersInstr" placeholder="Please indicate..."></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Variations -->
+      <div class="card" style="margin:12px 0">
+        <div class="card-h">
+          <h2>💰 Variations (Size / Giá)</h2>
+          <button class="btn btn-o btn-sm" onclick="addVarRow()">+ Thêm</button>
+        </div>
+        <div class="card-b" id="edVarList"></div>
+      </div>
+
+      <!-- Mockup URLs -->
+      <div class="card" style="margin:12px 0">
+        <div class="card-h">
+          <h2>🖼️ Mockup URLs (ảnh phụ cố định)</h2>
+          <button class="btn btn-o btn-sm" onclick="addMockupRow()">+ Thêm</button>
+        </div>
+        <div class="card-b" id="edMkList"></div>
+        <div class="mk-grid" id="edMkPreview" style="padding:0 14px 14px"></div>
+      </div>
+
+      <!-- Description HTML -->
+      <div class="card" style="margin:12px 0">
+        <div class="card-h"><h2>📄 Description HTML</h2></div>
+        <div class="card-b">
+          <div class="desc-wrap">
+            <textarea class="desc-code" id="edDesc" placeholder="Paste HTML description..." oninput="updateDescPreview()"></textarea>
+            <div class="desc-preview"><iframe id="descIframe"></iframe></div>
+          </div>
+          <button class="btn btn-o btn-sm" style="margin-top:8px" onclick="useDefaultDesc()">📋 Dùng template mặc định</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+        <button class="btn btn-o" onclick="closeEditor()">Hủy</button>
+        <button class="btn btn-p" onclick="saveProduct()">💾 Lưu product type</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ================================================================
+// DEFAULT DATA
+// ================================================================
+const DEFAULT_DESC = (title,intro,features,material,sizes,colors) => `<!doctype html><html lang="zxx"><head></head><body><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"></body></html><title>Free eBay listing template designed by dewiso.com</title><link href="https://dewiso.com/css/bootstrap.min.css" rel="stylesheet" /><style type="text/css">.element{background:#283055}</style><div class="element" style="border-left:1px solid #283055;border-right:1px solid #283055;border-top:1px solid #283055;color:#fff;border-bottom:1px solid #283055;line-height:45px"><div class="container" style="padding:40px 0"><div class="col-12 col-md-12"><h1 style="text-align:center"><font face="Arial">PRODUCT DESCRIPTIONS</font></h1></div></div></div><div style="background:#F4F6F7;border-left:1px solid #283055;border-right:1px solid #283055;color:#273C2C;line-height:25px"><div class="container" style="padding:40px 0"><div class="col-12 col-md-12"><h2 style="line-height:45px;color:rgb(40,48,85);text-align:center">100% Satisfaction Guaranteed</h2><h3 style="text-align:center">Please review the product description carefully before ordering.</h3><h2 style="line-height:45px;color:rgb(40,48,85);text-align:justify"><strong>FEATURES AND DETAILS</strong></h2><hr align="left" style="background:#283055;height:1px;width:10%" /><h2 style="text-align:justify">${title}</h2><p style="text-align:justify">${intro}</p><p style="text-align:justify">${features}</p><p style="text-align:justify">${material}</p><p style="text-align:justify"><strong>Available Sizes:</strong> ${sizes}</p><p style="text-align:justify"><strong>Colors:</strong> ${colors}</p></div></div></div><div style="border-left:1px solid #283055;border-right:1px solid #283055;border-bottom:1px solid #283055;color:#273C2C;line-height:25px"><div class="container" style="padding:40px 0"><div class="col-12 col-md-12"><h2 style="color:#283055;line-height:45px"><strong>CONTACT US</strong></h2><p><strong>24/7 Customer Support</strong></p><hr align="left" style="background:#283055;height:1px;width:10%" /><p>Have a question? Reach out through eBay messages. We respond within 24 hours.</p></div><table class="table table-responsive table-borderless" style="color:#273C2C;line-height:25px;font-size:16px;margin-top:30px"><tbody><tr><th><font face="Arial">Payment</font></th><td>All eBay-approved payment methods.</td></tr><tr><th><font face="Arial">Shipping</font></th><td><p>US Orders: 5-10 business days.</p><p><em><strong>*2-5 business days processing. Ship from USA.</strong></em></p></td></tr><tr><th><font face="Arial">Contact</font></th><td>Please contact us before leaving negative feedback. 100% satisfaction guaranteed!</td></tr></tbody></table></div><div class="col-12 col-md-12 element" style="border-top:1px solid #283055;color:#fff;line-height:25px"><div class="container" style="padding:20px 0 10px 0;font-size:80%;text-align:center"><p><font face="Arial">THANK YOU FOR YOUR PURCHASE</font></p></div></div></div>`;
+
+const DEFAULT_PRODUCTS = {
+  tshirt2d:{name:"T-Shirt 2D",icon:"👕",category:"15687",varKey:"US Size",
+    specifics:{brand:"Unbranded",size:"S-5XL",type:"T-shirt",sizeType:"Regular",color:"MultiColor",dept:"Unisex Adult",fit:"Regular fit",sleeve:"Short Sleeve",personalize:"Yes",persInstr:"Please indicate the shirt color you would like and customize it as needed!"},
+    variations:[{s:"S",p:"15.99"},{s:"M",p:"17.99"},{s:"L",p:"19.99"},{s:"XL",p:"21.99"},{s:"2XL",p:"22.99"},{s:"3XL",p:"23.99"},{s:"4XL",p:"24.99"},{s:"5XL",p:"25.99"}],
+    mockups:["https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/eec93afd-b541-4809-446a-75c657d48300/public","https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/cc3bda12-c2eb-4a80-04ca-258824b5d300/public","https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/b0782d80-afe2-4353-635a-c7f0868d2500/public","https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/fdf315b4-55f5-4c43-023e-b7df31301900/public","https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/331981e1-7226-49df-559f-f28056f20200/public"],
+    desc:DEFAULT_DESC("Classic Unisex T-Shirt Gildan 5000","Premium DTG print, soft cotton, comfortable fit.","<strong>Features:</strong> 5.3 oz cotton, double-needle stitching, reinforced shoulders, crew neck.","<strong>Material:</strong> 100% cotton (standard), 50/50 (dark/heather)","S, M, L, XL, 2XL, 3XL, 4XL, 5XL","40+ colors available")},
+  tshirt3d:{name:"T-Shirt 3D",icon:"🎨",category:"15687",varKey:"US Size",
+    specifics:{brand:"Unbranded",size:"S-5XL",type:"T-shirt",sizeType:"Regular",color:"MultiColor",dept:"Unisex Adult",fit:"Regular fit",sleeve:"Short Sleeve",personalize:"Yes",persInstr:"Please indicate the size!"},
+    variations:[{s:"S",p:"24.99"},{s:"M",p:"26.99"},{s:"L",p:"28.99"},{s:"XL",p:"30.99"},{s:"2XL",p:"32.99"},{s:"3XL",p:"34.99"},{s:"4XL",p:"36.99"},{s:"5XL",p:"38.99"}],
+    mockups:[],desc:DEFAULT_DESC("All-Over Print 3D T-Shirt — Premium Sublimation","Edge-to-edge vivid print. Won't crack, peel, or fade.","<strong>Features:</strong> Full sublimation (front, back, sleeves), lightweight, moisture-wicking.","<strong>Material:</strong> 95% Polyester, 5% Spandex","S, M, L, XL, 2XL, 3XL, 4XL, 5XL","Full color sublimation")},
+  poster:{name:"Poster",icon:"🖼️",category:"73478",varKey:"Size",
+    specifics:{brand:"Unbranded",size:"Multiple Sizes",type:"Poster Print",sizeType:"",color:"MultiColor",dept:"",fit:"",sleeve:"",personalize:"No",persInstr:""},
+    variations:[{s:'8"x10"',p:"9.99"},{s:'11"x14"',p:"14.99"},{s:'16"x20"',p:"19.99"},{s:'18"x24"',p:"24.99"},{s:'24"x36"',p:"34.99"}],
+    mockups:[],desc:DEFAULT_DESC("Premium Art Print / Poster","Museum-quality giclée print on archival paper.","<strong>Features:</strong> 250gsm archival matte, fade-resistant inks, ships flat.","<strong>Paper:</strong> Acid-free, lignin-free archival matte",'8"x10", 11"x14", 16"x20", 18"x24", 24"x36"',"Full color print")},
+  mug:{name:"Mug",icon:"☕",category:"30051",varKey:"Size",
+    specifics:{brand:"Unbranded",size:"11oz, 15oz",type:"Coffee Mug",sizeType:"",color:"White",dept:"",fit:"",sleeve:"",personalize:"Yes",persInstr:"Let us know if you want text customization!"},
+    variations:[{s:"11oz",p:"16.99"},{s:"15oz",p:"19.99"}],
+    mockups:[],desc:DEFAULT_DESC("Custom Ceramic Coffee Mug","Premium sublimation print, perfect gift.","<strong>Features:</strong> Professional sublimation, dishwasher & microwave safe, C-handle.","<strong>Material:</strong> High-quality white ceramic, lead-free","11oz (standard), 15oz (large)","White ceramic with full-color print")},
+  phonecase:{name:"Phone Case",icon:"📱",category:"20349",varKey:"Compatible Model",
+    specifics:{brand:"Unbranded",size:"",type:"Fitted Case/Skin",sizeType:"",color:"MultiColor",dept:"",fit:"",sleeve:"",personalize:"No",persInstr:""},
+    variations:[{s:"iPhone 15",p:"19.99"},{s:"iPhone 15 Pro",p:"19.99"},{s:"iPhone 15 Pro Max",p:"21.99"},{s:"iPhone 14",p:"17.99"},{s:"iPhone 14 Pro",p:"19.99"},{s:"Samsung Galaxy S24",p:"19.99"},{s:"Samsung Galaxy S24 Ultra",p:"21.99"}],
+    mockups:[],desc:DEFAULT_DESC("Custom Phone Case — Tough Protection","Dual-layer case with stunning UV print.","<strong>Features:</strong> Polycarbonate + TPU, raised edges, wireless charging compatible.","<strong>Material:</strong> Hard polycarbonate back + flexible TPU bumper","iPhone 15/Pro/Max, 14/Pro, Samsung S24/Ultra","Full color UV print")}
+};
+
+const DEFAULT_GLOBAL = {location:"Kuala Lumpur, Malaysia",shipping:"SHIPPING",returns:"RETURN",payment:"PAYMENT",actionHeader:"*Action(SiteID=US|Country=MY|Currency=USD|Version=1193|CC=UTF-8)",aiProvider:"none",aiKey:"",aiModel:"",aiPrompt:""};
+
+const HDRS=["*Action(SiteID=US|Country=MY|Currency=USD|Version=1193|CC=UTF-8)","CustomLabel","*Category","StoreCategory","*Title","Subtitle","Relationship","RelationshipDetails","*ConditionID","*C:Brand","*C:Size","*C:Type","*C:Size Type","*C:Color","*C:Department","C:Theme","C:Fit","C:Character","C:Sleeve Length","C:Pattern","C:Character Family","C:Country/Region of Manufacture","C:Features","C:Neckline","C:Material","C:Fabric Type","C:Vintage","C:Accents","C:Product Line","C:Personalize","C:Handmade","C:Season","C:Year Manufactured","C:Model","C:Garment Care","C:California Prop 65 Warning","C:MPN","C:Personalization Instructions","C:Unit Quantity","C:Unit Type","PicURL","GalleryType","VideoID","*Description","*Format","*Duration","*StartPrice","BuyItNowPrice","BestOfferEnabled","BestOfferAutoAcceptPrice","MinimumBestOfferPrice","*Quantity","ImmediatePayRequired","*Location","ShippingType","ShippingService-1:Option","ShippingService-1:Cost","ShippingService-2:Option","ShippingService-2:Cost","*DispatchTimeMax","PromotionalShippingDiscount","ShippingDiscountProfileID","*ReturnsAcceptedOption","ReturnsWithinOption","RefundOption","ShippingCostPaidByOption","AdditionalDetails","ShippingProfileName","ReturnProfileName","PaymentProfileName","ProductCompliancePolicyID","Regional ProductCompliancePolicies","EconomicOperator CompanyName","EconomicOperator AddressLine1","EconomicOperator AddressLine2","EconomicOperator City","EconomicOperator Country","EconomicOperator PostalCode","EconomicOperator StateOrProvince","EconomicOperator Phone","EconomicOperator Email"];
+const NC=HDRS.length;
+
+// ================================================================
+// STATE (persistent via localStorage)
+// ================================================================
+let products = {};
+let globalConfig = {};
+let curType = '';
+let listings = [];
+let editingId = null;
+let editorVars = [];
+let editorMockups = [];
+
+// ================================================================
+// STORAGE
+// ================================================================
+function save(){localStorage.setItem('pod_products',JSON.stringify(products));localStorage.setItem('pod_global',JSON.stringify(globalConfig))}
+function load(){
+  try{products=JSON.parse(localStorage.getItem('pod_products'))}catch(e){}
+  if(!products||!Object.keys(products).length) products=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+  try{globalConfig=JSON.parse(localStorage.getItem('pod_global'))}catch(e){}
+  if(!globalConfig||!globalConfig.location) globalConfig={...DEFAULT_GLOBAL};
+  const a=localStorage.getItem('cf_aid'),t=localStorage.getItem('cf_tok');
+  if(a)document.getElementById('cfAid').value=a;
+  if(t)document.getElementById('cfTok').value=t;
+  curType=Object.keys(products)[0]||'';
+}
+
+// ================================================================
+// INIT
+// ================================================================
+function init(){
+  load();
+  renderGenTabs();
+  renderPTGrid();
+  loadGlobalUI();
+  if(curType)selectProduct(curType);
+}
+
+// ================================================================
+// PAGE NAV
+// ================================================================
+function showPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page'+p.charAt(0).toUpperCase()+p.slice(1)).classList.add('active');
+  document.getElementById('nav'+p.charAt(0).toUpperCase()+p.slice(1,3).charAt(0).toUpperCase()+p.slice(2)).classList.add('active');
+  ({generate:()=>document.getElementById('navGen'),products:()=>document.getElementById('navProd'),settings:()=>document.getElementById('navSet')})[p]().classList.add('active');
+  if(p==='products')renderPTGrid();
+}
+function showPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
+  const pages={generate:'pageGenerate',products:'pageProducts',settings:'pageSettings'};
+  const navs={generate:'navGen',products:'navProd',settings:'navSet'};
+  document.getElementById(pages[p]).classList.add('active');
+  document.getElementById(navs[p]).classList.add('active');
+  if(p==='products')renderPTGrid();
+  if(p==='settings')loadGlobalUI();
+}
+
+// ================================================================
+// GENERATE PAGE
+// ================================================================
+function renderGenTabs(){
+  const el=document.getElementById('genTabs');el.innerHTML='';
+  Object.entries(products).forEach(([k,v])=>{
+    const t=document.createElement('div');
+    t.className='tab'+(k===curType?' active':'');
+    t.innerHTML=`<span>${v.icon}</span>${v.name}`;
+    t.onclick=()=>selectProduct(k);
+    el.appendChild(t);
+  });
+}
+
+function selectProduct(k){
+  curType=k;
+  renderGenTabs();
+  const P=products[k];
+  document.getElementById('curProdTitle').textContent=`${P.icon} ${P.name}`;
+  document.getElementById('curProdInfo').innerHTML=`<b>Category:</b> ${P.category}<br><b>Variations:</b> ${P.variations.map(v=>v.s+' $'+v.p).join(', ')}<br><b>Mockups:</b> ${P.mockups.length} ảnh phụ<br><b>Var Key:</b> ${P.varKey}`;
+  document.getElementById('inputArea').placeholder=`${P.icon} ${P.name}\n\nMỗi dòng: Title|Link ảnh gốc\n\nVí dụ:\nMy Cool ${P.name}|https://example.com/design.jpg`;
+  // Mockup preview
+  const mp=document.getElementById('mkPreview');
+  if(P.mockups.length){
+    mp.innerHTML='<div class="mk-grid">'+P.mockups.map((u,i)=>`<div class="mk-item"><img class="mk-thumb" src="${u}" onerror="this.style.display='none'"><label>IMG ${i+2}</label></div>`).join('')+'</div>';
+  } else mp.innerHTML='<p style="font-size:10px;color:var(--text3)">Chưa có mockup. Thêm trong Product Types.</p>';
+  parse();prev();
+}
+
+// ================================================================
+// PRODUCT TYPES GRID
+// ================================================================
+function renderPTGrid(){
+  const el=document.getElementById('ptGrid');el.innerHTML='';
+  Object.entries(products).forEach(([k,v])=>{
+    const d=document.createElement('div');d.className='pt-card';
+    d.innerHTML=`
+      <div class="ico">${v.icon}</div>
+      <div class="name">${v.name}</div>
+      <div class="meta">Category: ${v.category} | ${v.variations.length} variations | ${v.mockups.length} mockups</div>
+      <div style="margin-top:6px"><span class="badge">${v.varKey}: ${v.variations.map(x=>x.s).join(', ')}</span></div>
+      <div class="acts">
+        <button class="btn btn-o btn-sm" onclick="openEditor('${k}')">✏️ Sửa</button>
+        <button class="btn btn-o btn-sm" onclick="duplicateProduct('${k}')">📋 Nhân bản</button>
+        <button class="btn btn-d btn-sm" onclick="deleteProduct('${k}')">🗑️</button>
+      </div>`;
+    el.appendChild(d);
+  });
+}
+
+function deleteProduct(k){
+  if(!confirm(`Xóa "${products[k].name}"?`))return;
+  delete products[k];save();renderPTGrid();renderGenTabs();
+  if(curType===k){curType=Object.keys(products)[0]||'';if(curType)selectProduct(curType)}
+  toast('Đã xóa','ok');
+}
+
+function duplicateProduct(k){
+  const src=products[k];
+  const newKey=k+'_copy_'+Date.now().toString(36);
+  products[newKey]=JSON.parse(JSON.stringify(src));
+  products[newKey].name+=' (Copy)';
+  save();renderPTGrid();renderGenTabs();toast('Đã nhân bản','ok');
+}
+
+// ================================================================
+// PRODUCT EDITOR (Modal)
+// ================================================================
+function openEditor(idOrNew){
+  editingId=idOrNew==='new'?null:idOrNew;
+  const P=editingId?products[editingId]:null;
+  document.getElementById('editorTitle').textContent=P?`Sửa: ${P.icon} ${P.name}`:'Tạo product type mới';
+  document.getElementById('edIcon').value=P?P.icon:'';
+  document.getElementById('edName').value=P?P.name:'';
+  document.getElementById('edCat').value=P?P.category:'';
+  document.getElementById('edVarKey').value=P?P.varKey:'US Size';
+  const sp=P?P.specifics:{brand:'Unbranded',size:'',type:'',sizeType:'',color:'',dept:'',fit:'',sleeve:'',personalize:'',persInstr:''};
+  document.getElementById('edBrand').value=sp.brand;
+  document.getElementById('edSizeDisp').value=sp.size;
+  document.getElementById('edType').value=sp.type;
+  document.getElementById('edSizeType').value=sp.sizeType;
+  document.getElementById('edColor').value=sp.color;
+  document.getElementById('edDept').value=sp.dept;
+  document.getElementById('edFit').value=sp.fit;
+  document.getElementById('edSleeve').value=sp.sleeve;
+  document.getElementById('edPers').value=sp.personalize;
+  document.getElementById('edPersInstr').value=sp.persInstr;
+  editorVars=P?JSON.parse(JSON.stringify(P.variations)):[{s:'S',p:'19.99'}];
+  editorMockups=P?[...P.mockups]:[];
+  renderEditorVars();renderEditorMockups();
+  document.getElementById('edDesc').value=P?P.desc:'';
+  updateDescPreview();
+  document.getElementById('editorModal').classList.add('show');
+}
+
+function closeEditor(){document.getElementById('editorModal').classList.remove('show')}
+
+function renderEditorVars(){
+  const el=document.getElementById('edVarList');el.innerHTML='';
+  editorVars.forEach((v,i)=>{
+    const d=document.createElement('div');d.className='var-row';
+    d.innerHTML=`<input class="fi" value="${v.s}" placeholder="Size" onchange="editorVars[${i}].s=this.value" style="flex:2"><input class="fi" value="${v.p}" placeholder="Price" onchange="editorVars[${i}].p=this.value" style="flex:1"><button class="btn btn-d btn-sm" onclick="editorVars.splice(${i},1);renderEditorVars()">✕</button>`;
+    el.appendChild(d);
+  });
+}
+function addVarRow(){editorVars.push({s:'',p:''});renderEditorVars()}
+
+function renderEditorMockups(){
+  const el=document.getElementById('edMkList');el.innerHTML='';
+  editorMockups.forEach((u,i)=>{
+    const d=document.createElement('div');d.className='var-row';
+    d.innerHTML=`<span style="font-size:9px;color:var(--text3);width:40px">IMG${i+2}</span><input class="fi" value="${u}" onchange="editorMockups[${i}]=this.value;renderMkPreviews()" style="font-size:9px"><button class="btn btn-d btn-sm" onclick="editorMockups.splice(${i},1);renderEditorMockups()">✕</button>`;
+    el.appendChild(d);
+  });
+  renderMkPreviews();
+}
+function addMockupRow(){editorMockups.push('');renderEditorMockups()}
+function renderMkPreviews(){
+  const el=document.getElementById('edMkPreview');
+  el.innerHTML=editorMockups.filter(u=>u).map((u,i)=>`<div class="mk-item"><img class="mk-thumb" src="${u}" onerror="this.style.display='none'"><label>IMG ${i+2}</label></div>`).join('');
+}
+
+function updateDescPreview(){
+  const code=document.getElementById('edDesc').value;
+  const iframe=document.getElementById('descIframe');
+  const doc=iframe.contentDocument||iframe.contentWindow.document;
+  doc.open();doc.write(code);doc.close();
+}
+
+function useDefaultDesc(){
+  const name=document.getElementById('edName').value||'Product';
+  const type=document.getElementById('edType').value||'Item';
+  document.getElementById('edDesc').value=DEFAULT_DESC(name,"Premium quality, perfect for any occasion.","<strong>Features:</strong> High quality print, durable, comfortable.","<strong>Material:</strong> Premium materials",document.getElementById('edSizeDisp').value||'Multiple sizes','Multiple colors');
+  updateDescPreview();
+}
+
+function saveProduct(){
+  const name=document.getElementById('edName').value.trim();
+  if(!name){toast('Nhập tên product type!','er');return}
+  const key=editingId||name.toLowerCase().replace(/[^a-z0-9]/g,'_')+'_'+Date.now().toString(36);
+  products[key]={
+    name,icon:document.getElementById('edIcon').value||'📦',
+    category:document.getElementById('edCat').value,
+    varKey:document.getElementById('edVarKey').value||'US Size',
+    specifics:{brand:document.getElementById('edBrand').value,size:document.getElementById('edSizeDisp').value,type:document.getElementById('edType').value,sizeType:document.getElementById('edSizeType').value,color:document.getElementById('edColor').value,dept:document.getElementById('edDept').value,fit:document.getElementById('edFit').value,sleeve:document.getElementById('edSleeve').value,personalize:document.getElementById('edPers').value,persInstr:document.getElementById('edPersInstr').value},
+    variations:editorVars.filter(v=>v.s),
+    mockups:editorMockups.filter(u=>u),
+    desc:document.getElementById('edDesc').value
+  };
+  save();closeEditor();renderPTGrid();renderGenTabs();
+  if(curType===key||!curType){curType=key;selectProduct(key)}
+  toast('Đã lưu "'+name+'"!','ok');
+}
+
+// ================================================================
+// SETTINGS PAGE
+// ================================================================
+function loadGlobalUI(){
+  document.getElementById('gLoc').value=globalConfig.location;
+  document.getElementById('gShip').value=globalConfig.shipping;
+  document.getElementById('gRet').value=globalConfig.returns;
+  document.getElementById('gPay').value=globalConfig.payment;
+  document.getElementById('gAct').value=globalConfig.actionHeader;
+  // AI
+  document.getElementById('aiProvider').value=globalConfig.aiProvider||'none';
+  document.getElementById('aiKey').value=globalConfig.aiKey||'';
+  document.getElementById('aiModel').value=globalConfig.aiModel||'';
+  if(globalConfig.aiPrompt)document.getElementById('aiPrompt').value=globalConfig.aiPrompt;
+  toggleAIFields();
+}
+function saveGlobal(){
+  globalConfig={location:document.getElementById('gLoc').value,shipping:document.getElementById('gShip').value,returns:document.getElementById('gRet').value,payment:document.getElementById('gPay').value,actionHeader:document.getElementById('gAct').value,
+    aiProvider:document.getElementById('aiProvider').value,aiKey:document.getElementById('aiKey').value,aiModel:document.getElementById('aiModel').value,aiPrompt:document.getElementById('aiPrompt').value};
+  save();toast('Đã lưu cài đặt!','ok');
+}
+function exportConfig(){
+  const data={products,globalConfig,cfAid:document.getElementById('cfAid').value,cfTok:document.getElementById('cfTok').value};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pod_config_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+}
+function importConfig(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(data.products)products=data.products;
+      if(data.globalConfig)globalConfig=data.globalConfig;
+      if(data.cfAid)document.getElementById('cfAid').value=data.cfAid;
+      if(data.cfTok)document.getElementById('cfTok').value=data.cfTok;
+      save();renderGenTabs();renderPTGrid();loadGlobalUI();
+      curType=Object.keys(products)[0];if(curType)selectProduct(curType);
+      toast('Import thành công!','ok');
+    }catch(err){toast('File JSON không hợp lệ!','er')}
+  };reader.readAsText(file);e.target.value='';
+}
+function resetAll(){
+  if(!confirm('Reset TẤT CẢ config về mặc định? Không thể hoàn tác!'))return;
+  localStorage.removeItem('pod_products');localStorage.removeItem('pod_global');
+  products=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));globalConfig={...DEFAULT_GLOBAL};
+  save();renderGenTabs();renderPTGrid();loadGlobalUI();
+  curType=Object.keys(products)[0];selectProduct(curType);toast('Đã reset!','ok');
+}
+
+// ================================================================
+// PARSE INPUT
+// ================================================================
+function parse(){
+  const raw=document.getElementById('inputArea').value.trim();
+  if(!raw){listings=[];stats();document.getElementById('btnGo').disabled=true;return}
+  listings=[];
+  raw.split('\n').filter(l=>l.trim()).forEach(line=>{
+    let t='',u='';const hi=line.indexOf('http');
+    if(hi>0){const bef=line.substring(0,hi);const pi=bef.lastIndexOf('|');if(pi!==-1){t=line.substring(0,pi).trim();u=line.substring(pi+1).trim()}else{const ti=bef.lastIndexOf('\t');if(ti!==-1){t=line.substring(0,ti).trim();u=line.substring(ti+1).trim()}else{t=bef.trim();u=line.substring(hi).trim()}}}
+    else if(line.includes('|')){const p=line.split('|');u=p.pop().trim();t=p.join('|').trim()}else{t=line.trim()}
+    if(t)listings.push({title:t.substring(0,80),origUrl:u,cfUrl:'',status:'pending'});
+  });
+  document.getElementById('btnGo').disabled=!listings.length;stats();
+}
+function stats(){const n=listings.length,P=products[curType];document.getElementById('sL').textContent=n;document.getElementById('sR').textContent=P?n*(1+P.variations.length):0}
+function prev(){
+  if(!listings.length){document.getElementById('prevSec').style.display='none';return}
+  document.getElementById('prevSec').style.display='block';
+  const tb=document.getElementById('prevBody');tb.innerHTML='';
+  listings.slice(0,6).forEach((l,i)=>{const tr=document.createElement('tr');
+    const statusBadge=l.status==='ok'?'<span style="font-size:8px;padding:1px 4px;background:rgba(16,185,129,.15);color:var(--green);border-radius:3px">✅</span>':l.status==='error'?'<span style="font-size:8px;padding:1px 4px;background:rgba(239,68,68,.15);color:var(--red);border-radius:3px">❌</span>':'<span style="font-size:8px;padding:1px 4px;background:rgba(59,130,246,.15);color:var(--accent);border-radius:3px">⏳</span>';
+    const titleHtml=l.origTitle?`<span style="text-decoration:line-through;color:var(--text3);font-size:9px">${l.origTitle.substring(0,35)}</span><br><span style="color:var(--green)">${l.title.substring(0,50)}</span>`:l.title.substring(0,55);
+    tr.innerHTML=`<td>${statusBadge}</td><td>${titleHtml}</td><td>${l.cfUrl?'✅CF':l.origUrl?'📷':'⚠️'}</td>`;tb.appendChild(tr)});
+  if(listings.length>6){const tr=document.createElement('tr');tr.innerHTML=`<td colspan="3" style="text-align:center;font-size:9px;color:var(--text3)">+${listings.length-6} nữa</td>`;tb.appendChild(tr)}
+}
+
+// ================================================================
+// AI TITLE REWRITE
+// ================================================================
+function toggleAIFields(){
+  const p=document.getElementById('aiProvider').value;
+  const models={claude:'claude-sonnet-4-20250514',openai:'gpt-4o-mini',gemini:'gemini-2.0-flash'};
+  if(p!=='none'&&!document.getElementById('aiModel').value){
+    document.getElementById('aiModel').value=models[p]||'';
+  }
+}
+
+function saveAI(){
+  globalConfig.aiProvider=document.getElementById('aiProvider').value;
+  globalConfig.aiKey=document.getElementById('aiKey').value;
+  globalConfig.aiModel=document.getElementById('aiModel').value;
+  globalConfig.aiPrompt=document.getElementById('aiPrompt').value;
+  save();toast('Đã lưu AI config!','ok');
+}
+
+async function callAI(title){
+  const provider=globalConfig.aiProvider;
+  const key=globalConfig.aiKey;
+  const model=globalConfig.aiModel;
+  const promptTpl=document.getElementById('aiPrompt').value||globalConfig.aiPrompt;
+  const P=products[curType];
+  const prompt=promptTpl.replace('{{TITLE}}',title).replace('{{PRODUCT_TYPE}}',P?P.name:'Product');
+
+  if(provider==='claude'){
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:model||'claude-sonnet-4-20250514',max_tokens:100,messages:[{role:'user',content:prompt}]})
+    });
+    const j=await r.json();
+    if(j.content&&j.content[0])return j.content[0].text.trim().substring(0,80);
+    throw new Error(j.error?.message||'Claude API error');
+  }
+
+  if(provider==='openai'){
+    const r=await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:model||'gpt-4o-mini',max_tokens:100,messages:[{role:'user',content:prompt}]})
+    });
+    const j=await r.json();
+    if(j.choices&&j.choices[0])return j.choices[0].message.content.trim().substring(0,80);
+    throw new Error(j.error?.message||'OpenAI API error');
+  }
+
+  if(provider==='gemini'){
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/${model||'gemini-2.0-flash'}:generateContent?key=${key}`;
+    const r=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:100}})
+    });
+    const j=await r.json();
+    if(j.candidates&&j.candidates[0]?.content?.parts?.[0])return j.candidates[0].content.parts[0].text.trim().substring(0,80);
+    throw new Error(j.error?.message||'Gemini API error');
+  }
+
+  return title;
+}
+
+async function rewriteTitles(addLog,pb,pp){
+  if(globalConfig.aiProvider==='none'||!globalConfig.aiKey)return;
+  addLog('\n━━ AI Rewrite Titles ━━');
+  let done=0,fail=0;
+  for(let i=0;i<listings.length;i++){
+    const l=listings[i];
+    if(!l.title)continue;
+    const origTitle=l.title;
+    try{
+      const newTitle=await callAI(origTitle);
+      l.origTitle=origTitle;
+      l.title=newTitle.replace(/^["']|["']$/g,'').substring(0,80);
+      done++;
+      addLog(`✅ #${i+1}: "${origTitle.substring(0,35)}..." → "${l.title.substring(0,35)}..."`);
+    }catch(e){
+      fail++;
+      addLog(`❌ #${i+1}: ${e.message.substring(0,60)}`);
+    }
+    pb.style.width=`${(done+fail)/listings.length*30}%`;
+    pp.textContent=`${Math.round((done+fail)/listings.length*30)}%`;
+    prev();
+    await new Promise(r=>setTimeout(r,150));
+  }
+  addLog(`━━ Rewrite: ${done} OK, ${fail} lỗi ━━`);
+}
+
+async function testAI(){
+  const provider=document.getElementById('aiProvider').value;
+  const key=document.getElementById('aiKey').value;
+  if(provider==='none'){toast('Chọn AI provider trước!','er');return}
+  if(!key){toast('Nhập API Key!','er');return}
+  // Save temp
+  globalConfig.aiProvider=provider;
+  globalConfig.aiKey=key;
+  globalConfig.aiModel=document.getElementById('aiModel').value;
+  globalConfig.aiPrompt=document.getElementById('aiPrompt').value;
+
+  const testTitle='Phish Summer tour 2025 September 13 14 2025 Coca Cola Amphitheater West Palm Beach FL Poster';
+  const res=document.getElementById('aiTestResult');
+  res.style.display='block';
+  res.innerHTML='⏳ Đang test...';
+  try{
+    const newTitle=await callAI(testTitle);
+    res.innerHTML=`✅ <b>OK!</b><br><span style="color:var(--text3)">Gốc: ${testTitle.substring(0,60)}...</span><br><span style="color:var(--green)">Mới: ${newTitle}</span><br><span style="color:var(--text3)">(${newTitle.length}/80 ký tự)</span>`;
+  }catch(e){
+    res.innerHTML=`❌ Lỗi: ${e.message}`;
+  }
+}
+
+// ================================================================
+// UPLOAD + CSV
+// ================================================================
+async function uploadToCF(url){
+  const aid=document.getElementById('cfAid').value.trim(),tok=document.getElementById('cfTok').value.trim();
+  localStorage.setItem('cf_aid',aid);localStorage.setItem('cf_tok',tok);
+  const fd=new FormData();fd.append('url',url);fd.append('requireSignedURLs','false');
+  const r=await fetch(`https://api.cloudflare.com/client/v4/accounts/${aid}/images/v1`,{method:'POST',headers:{'Authorization':`Bearer ${tok}`},body:fd});
+  const j=await r.json();
+  if(j.success&&j.result?.variants?.length)return j.result.variants[0];
+  throw new Error(j.errors?j.errors.map(e=>e.message).join(', '):'Failed');
+}
+
+async function startProcess(){
+  if(!listings.length||!curType)return;
+  const aid=document.getElementById('cfAid').value.trim(),tok=document.getElementById('cfTok').value.trim();
+  if(!aid||!tok){toast('Nhập CF Account ID + API Token!','er');return}
+  const btn=document.getElementById('btnGo');btn.disabled=true;btn.textContent='⏳ Processing...';
+  const pw=document.getElementById('pw');pw.style.display='block';
+  const pb=document.getElementById('pb'),pl=document.getElementById('pl'),pp=document.getElementById('pp'),log=document.getElementById('plog');log.innerHTML='';
+  const addLog=m=>{log.innerHTML+=m+'\n';log.scrollTop=log.scrollHeight};
+
+  // STEP 1: AI Rewrite (if enabled)
+  if(globalConfig.aiProvider&&globalConfig.aiProvider!=='none'&&globalConfig.aiKey){
+    pl.textContent='AI rewriting titles...';
+    await rewriteTitles(addLog,pb,pp);
+  }
+
+  // STEP 2: Upload images
+  let uploaded=0,fail=0;const total=listings.filter(l=>l.origUrl).length;let done=0;
+  addLog('\n━━ Upload ảnh ━━');
+  const pOffset=globalConfig.aiProvider!=='none'?30:0;
+  for(let i=0;i<listings.length;i++){
+    const l=listings[i];if(!l.origUrl){l.status='ok';continue}
+    if(l.origUrl.includes('imagedelivery.net')){l.cfUrl=l.origUrl;l.status='ok';uploaded++;done++;pb.style.width=`${pOffset+done/total*(80-pOffset)}%`;prev();continue}
+    l.status='uploading';prev();pl.textContent=`Upload ${done+1}/${total}`;
+    try{l.cfUrl=await uploadToCF(l.origUrl);l.status='ok';uploaded++;addLog(`✅ #${i+1}`)}
+    catch(e){l.status='error';fail++;addLog(`❌ #${i+1} ${e.message}`)}
+    done++;pb.style.width=`${pOffset+done/total*(80-pOffset)}%`;pp.textContent=`${Math.round(pOffset+done/total*(80-pOffset))}%`;prev();
+    await new Promise(r=>setTimeout(r,200));
+  }
+
+  // STEP 3: Generate CSV
+  pl.textContent='Generating CSV...';pb.style.width='90%';
+  const rows=genCSV();downloadCSV(rows);
+  pb.style.width='100%';pp.textContent='100%';pl.textContent='✅ Done!';
+  addLog(`\n✅ ${rows.length-1} rows CSV`);
+  btn.disabled=false;btn.textContent='⚡ Upload ảnh & Generate CSV';
+  toast(`✅ ${uploaded} uploaded, ${rows.length-1} rows!`,'ok');
+}
+
+function genCSV(){
+  const P=products[curType];if(!P)return[HDRS];
+  HDRS[0]=globalConfig.actionHeader;
+  const rows=[HDRS];const sizeList=P.variations.map(v=>v.s).join(';');
+  for(const l of listings){
+    if(l.status!=='ok')continue;
+    const p=new Array(NC).fill('');
+    p[0]='Add';p[2]=P.category;p[4]=l.title;p[7]=P.varKey+'='+sizeList;p[8]='1000';
+    const sp=P.specifics;p[9]=sp.brand;p[10]=sp.size;p[11]=sp.type;p[12]=sp.sizeType;p[13]=sp.color;p[14]=sp.dept;p[16]=sp.fit;p[18]=sp.sleeve;p[29]=sp.personalize;p[37]=sp.persInstr;
+    p[40]=[l.cfUrl,...P.mockups].filter(u=>u).join(' | ');
+    p[43]=P.desc;p[44]='FixedPrice';p[45]='GTC';p[53]=globalConfig.location;
+    p[67]=globalConfig.shipping;p[68]=globalConfig.returns;p[69]=globalConfig.payment;
+    rows.push(p);
+    P.variations.forEach(v=>{const vr=new Array(NC).fill('');vr[6]='Variation';vr[7]=P.varKey+'='+v.s;vr[46]=v.p;vr[51]='1';rows.push(vr)});
+  }
+  return rows;
+}
+function downloadCSV(rows){
+  const csv=rows.map(r=>r.map(c=>{const s=String(c);return(s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s}).join(',')).join('\n');
+  const P=products[curType];
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`${curType}_${listings.filter(l=>l.status==='ok').length}listings_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ================================================================
+// HELPERS
+// ================================================================
+async function testCF(){
+  const aid=document.getElementById('cfAid').value.trim(),tok=document.getElementById('cfTok').value.trim();
+  if(!aid||!tok){toast('Nhập credentials!','er');return}
+  try{const r=await fetch(`https://api.cloudflare.com/client/v4/accounts/${aid}/images/v1/stats`,{headers:{'Authorization':`Bearer ${tok}`}});const j=await r.json();
+    if(j.success){localStorage.setItem('cf_aid',aid);localStorage.setItem('cf_tok',tok);toast(`✅ OK! ${j.result.count.current} ảnh`,'ok')}else toast('❌ '+j.errors.map(e=>e.message).join(', '),'er')}
+  catch(e){toast('❌ '+e.message,'er')}
+}
+function loadSample(){
+  const samples={tshirt2d:'Phish Summer Tour 2025 T-Shirt|https://picsum.photos/800/800\nVintage Mountain Hiking Tee|https://picsum.photos/801/801',tshirt3d:'3D Galaxy Cat T-Shirt|https://picsum.photos/802/802',poster:'Retro Movie Poster|https://picsum.photos/600/900',mug:'Best Dad Ever Mug|https://picsum.photos/803/803',phonecase:'Floral iPhone 15 Case|https://picsum.photos/400/800'};
+  document.getElementById('inputArea').value=samples[curType]||'Sample Product|https://picsum.photos/800/800';parse();prev();
+}
+function clearInput(){document.getElementById('inputArea').value='';listings=[];stats();document.getElementById('btnGo').disabled=true;document.getElementById('prevSec').style.display='none';document.getElementById('pw').style.display='none'}
+function toggleC(el){el.classList.toggle('cc');el.closest('.card-h').nextElementSibling.classList.toggle('hid')}
+function toast(m,t){const el=document.getElementById('toast');el.textContent=m;el.className='toast '+(t==='er'?'t-er':'t-ok');el.style.display='block';setTimeout(()=>el.style.display='none',3500)}
+
+// Input listeners
+document.getElementById('inputArea').addEventListener('input',()=>{parse();prev()});
+document.getElementById('inputArea').addEventListener('paste',()=>setTimeout(()=>{parse();prev()},50));
+
+init();
+</script>
+</body>
+</html>
