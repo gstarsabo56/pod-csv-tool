@@ -643,6 +643,11 @@ function openEditor(idOrNew){
 
 function onCatChange(){
   const cat=document.getElementById('edCat').value.trim();
+  // If csvHeaders exist, just re-render from those (don't override with presets)
+  if(editorCsvHeaders && editorCsvHeaders.length > 0){
+    renderSpecificsFields(cat, null);
+    return;
+  }
   const preset=CATEGORY_PRESETS[cat];
   if(preset){
     document.getElementById('edVarKey').value=preset.varKey;
@@ -658,6 +663,26 @@ function onCatChange(){
 function renderSpecificsFields(catId, existingSpecifics){
   const grid=document.getElementById('edSpecificsGrid');
   grid.innerHTML='';
+  
+  // If csvHeaders available, render C: columns from template
+  if(editorCsvHeaders && editorCsvHeaders.length > 0){
+    const cCols = editorCsvHeaders.filter(h => h.startsWith('C:'));
+    if(cCols.length){
+      cCols.forEach(col => {
+        const label = col.substring(2); // Remove "C:" prefix
+        const val = editorCsvDefaults[col] || '';
+        const div = document.createElement('div');
+        div.className = 'fg';
+        div.innerHTML = `<label class="fl">${label}</label><input class="fi" data-spec-csv="${col}" value="${val}" placeholder="">`;
+        grid.appendChild(div);
+      });
+      document.getElementById('edCatLabel').textContent = '✅ ' + cCols.length + ' item specifics từ CSV template';
+      document.getElementById('edCatLabel').style.color = 'var(--green)';
+      return;
+    }
+  }
+  
+  // Fallback: use CATEGORY_PRESETS
   const preset=CATEGORY_PRESETS[catId];
   const fields=preset?preset.fields:["brand","type","color","material","features"];
   const defaults=preset?preset.defaults:{};
@@ -711,8 +736,8 @@ function updateDescPreview(){
 
 function useDefaultDesc(){
   const name=document.getElementById('edName').value||'Product';
-  // Get size from dynamic specifics if available
-  const sizeEl=document.querySelector('#edSpecificsGrid [data-spec="size"]');
+  // Get size from dynamic specifics if available (legacy or CSV)
+  const sizeEl=document.querySelector('#edSpecificsGrid [data-spec="size"]') || document.querySelector('#edSpecificsGrid [data-spec-csv="C:Size"]');
   const sizeVal=sizeEl?sizeEl.value:'Multiple sizes';
   document.getElementById('edDesc').value=DEFAULT_DESC(name,"Premium quality, perfect for any occasion.","<strong>Features:</strong> High quality print, durable, comfortable.","<strong>Material:</strong> Premium materials",sizeVal||'Multiple sizes','Multiple colors');
   updateDescPreview();
@@ -722,12 +747,17 @@ function saveProduct(){
   const name=document.getElementById('edName').value.trim();
   if(!name){toast('Nhập tên product type!','er');return}
   const key=editingId||name.toLowerCase().replace(/[^a-z0-9]/g,'_')+'_'+Date.now().toString(36);
-  // Read dynamic specifics
+  // Read dynamic specifics (legacy)
   const specifics={};
   document.querySelectorAll('#edSpecificsGrid [data-spec]').forEach(el=>{
     specifics[el.dataset.spec]=el.value;
   });
-  // Collect CSV defaults from editor
+  // Read CSV-based specifics into csvDefaults
+  document.querySelectorAll('#edSpecificsGrid [data-spec-csv]').forEach(el=>{
+    if(el.value.trim()) editorCsvDefaults[el.dataset.specCsv]=el.value.trim();
+    else delete editorCsvDefaults[el.dataset.specCsv];
+  });
+  // Collect CSV defaults from template column editor too
   collectCsvDefaults();
   products[key]={
     name,icon:document.getElementById('edIcon').value||'📦',
@@ -1308,6 +1338,8 @@ function uploadCsvTemplate(event){
     if(newInfoRows.length) window._editorInfoRows=newInfoRows;
     
     renderCsvCols();
+    // Re-render item specifics from new CSV headers
+    renderSpecificsFields(document.getElementById('edCat').value, null);
     toast(`✅ Imported ${editorCsvHeaders.length} cột từ CSV`,'ok');
   };
   reader.readAsText(file);
