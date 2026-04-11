@@ -343,7 +343,7 @@ Original title: {{TITLE}}</textarea>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="fg"><label class="fl">eBay Category ID</label><input class="fi" id="edCat" placeholder="15687" onchange="onCatChange()" oninput="onCatChange()"></div>
-        <div class="fg"><label class="fl">Variation Key</label><input class="fi" id="edVarKey" placeholder="US Size, Size, Compatible Model..."></div>
+        <div class="fg"><label class="fl">Category Name (hiển thị)</label><input class="fi" id="edCatName" placeholder="Men's T-Shirts"></div>
       </div>
 
       <!-- Item Specifics (dynamic per category) -->
@@ -357,13 +357,17 @@ Original title: {{TITLE}}</textarea>
         </div>
       </div>
 
-      <!-- Variations -->
+      <!-- Variations (multi-key) -->
       <div class="card" style="margin:12px 0">
         <div class="card-h">
-          <h2>💰 Variations (Size / Giá)</h2>
-          <button class="btn btn-o btn-sm" onclick="addVarRow()">+ Thêm</button>
+          <h2>💰 Variations</h2>
+          <button class="btn btn-o btn-sm" onclick="addVarDimension()">+ Thêm dimension</button>
         </div>
-        <div class="card-b" id="edVarList"></div>
+        <div class="card-b">
+          <p style="font-size:11px;color:var(--text2);margin-bottom:8px">Dimension 1 = kèm giá (vd: Size). Dimension 2+ = chỉ giá trị (vd: Color) — giá theo Dimension 1.</p>
+          <div id="edVarDimensions"></div>
+          <div style="margin-top:10px;padding:8px;background:var(--bg);border-radius:6px;font-size:12px;color:var(--text2)" id="edVarSummary"></div>
+        </div>
       </div>
 
       <!-- Mockup URLs -->
@@ -512,6 +516,7 @@ let listings = [];
 let editingId = null;
 let editorVars = [];
 let editorMockups = [];
+let editorVarDims = []; // [{key:"US Size", values:[{v:"S",p:"15.99"},{v:"M",p:"17.99"}]}, {key:"Color", values:[{v:"Black"},{v:"White"}]}]
 
 // ================================================================
 // STORAGE
@@ -586,11 +591,14 @@ function renderPTGrid(){
   const el=document.getElementById('ptGrid');el.innerHTML='';
   Object.entries(products).forEach(([k,v])=>{
     const d=document.createElement('div');d.className='pt-card';
+    const dims=v.varDims||[{key:v.varKey,values:v.variations.map(x=>({v:x.s}))}];
+    const dimsInfo=dims.filter(d=>d.key).map(d=>d.key+'('+d.values.filter(x=>x.v).length+')').join(' × ');
+    let totalCombos=1;dims.filter(d=>d.key&&d.values.some(x=>x.v)).forEach(d=>{totalCombos*=d.values.filter(x=>x.v).length||1;});
     d.innerHTML=`
       <div class="ico">${v.icon}</div>
       <div class="name">${v.name}</div>
-      <div class="meta">Category: ${v.category} | ${v.variations.length} variations | ${v.mockups.length} mockups${v.csvHeaders?' | ✅ '+v.csvHeaders.length+' CSV cols':' | ⚠️ Legacy CSV'}</div>
-      <div style="margin-top:6px"><span class="badge">${v.varKey}: ${v.variations.map(x=>x.s).join(', ')}</span></div>
+      <div class="meta">Category: ${v.category} | ${totalCombos} combos | ${v.mockups.length} mockups${v.csvHeaders?' | ✅ '+v.csvHeaders.length+' CSV cols':' | ⚠️ Legacy CSV'}</div>
+      <div style="margin-top:6px"><span class="badge">${dimsInfo}</span></div>
       <div class="acts">
         <button class="btn btn-o btn-sm" onclick="openEditor('${k}')">✏️ Sửa</button>
         <button class="btn btn-o btn-sm" onclick="duplicateProduct('${k}')">📋 Nhân bản</button>
@@ -625,10 +633,19 @@ function openEditor(idOrNew){
   document.getElementById('edIcon').value=P?P.icon:'';
   document.getElementById('edName').value=P?P.name:'';
   document.getElementById('edCat').value=P?P.category:'15687';
-  document.getElementById('edVarKey').value=P?P.varKey:'US Size';
+  document.getElementById('edCatName').value=P?P.catName||'':'';
   editorVars=P?JSON.parse(JSON.stringify(P.variations)):[{s:'S',p:'19.99'}];
   editorMockups=P?[...P.mockups]:[];
-  renderEditorVars();renderEditorMockups();
+  // Load multi-dim variations
+  if(P&&P.varDims&&P.varDims.length){
+    editorVarDims=JSON.parse(JSON.stringify(P.varDims));
+  } else if(P){
+    // Convert old single-key format to multi-dim
+    editorVarDims=[{key:P.varKey||'US Size', values:P.variations.map(v=>({v:v.s,p:v.p}))}];
+  } else {
+    editorVarDims=[{key:'US Size', values:[{v:'S',p:'15.99'},{v:'M',p:'17.99'},{v:'L',p:'19.99'},{v:'XL',p:'21.99'}]}];
+  }
+  renderVarDimensions();renderEditorMockups();
   document.getElementById('edDesc').value=P?P.desc:'';
   updateDescPreview();
   // CSV template
@@ -650,8 +667,9 @@ function onCatChange(){
   }
   const preset=CATEGORY_PRESETS[cat];
   if(preset){
-    document.getElementById('edVarKey').value=preset.varKey;
+    if(editorVarDims.length)editorVarDims[0].key=preset.varKey;
     renderSpecificsFields(cat, null);
+    renderVarDimensions();
     document.getElementById('edCatLabel').textContent='✅ '+preset.name;
     document.getElementById('edCatLabel').style.color='var(--green)';
   } else {
@@ -702,15 +720,57 @@ function renderSpecificsFields(catId, existingSpecifics){
 
 function closeEditor(){document.getElementById('editorModal').classList.remove('show')}
 
-function renderEditorVars(){
-  const el=document.getElementById('edVarList');el.innerHTML='';
-  editorVars.forEach((v,i)=>{
-    const d=document.createElement('div');d.className='var-row';
-    d.innerHTML=`<input class="fi" value="${v.s}" placeholder="Size" onchange="editorVars[${i}].s=this.value" style="flex:2"><input class="fi" value="${v.p}" placeholder="Price" onchange="editorVars[${i}].p=this.value" style="flex:1"><button class="btn btn-d btn-sm" onclick="editorVars.splice(${i},1);renderEditorVars()">✕</button>`;
-    el.appendChild(d);
+function renderVarDimensions(){
+  const el=document.getElementById('edVarDimensions');el.innerHTML='';
+  editorVarDims.forEach((dim,di)=>{
+    const isPrimary=di===0;
+    const div=document.createElement('div');
+    div.style.cssText='margin-bottom:10px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px';
+    let valRows=dim.values.map((v,vi)=>{
+      const priceCol=isPrimary?`<input class="fi" value="${v.p||''}" placeholder="Giá" onchange="editorVarDims[${di}].values[${vi}].p=this.value;updateVarSummary()" style="flex:1;font-size:12px">`:'';
+      return `<div style="display:flex;gap:4px;margin-bottom:3px;align-items:center">
+        <input class="fi" value="${v.v||''}" placeholder="Giá trị" onchange="editorVarDims[${di}].values[${vi}].v=this.value;updateVarSummary()" style="flex:2;font-size:12px">
+        ${priceCol}
+        <button class="btn btn-d btn-sm" onclick="editorVarDims[${di}].values.splice(${vi},1);renderVarDimensions()" style="padding:2px 6px;font-size:10px">✕</button>
+      </div>`;
+    }).join('');
+    div.innerHTML=`
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+        <span style="font-size:11px;font-weight:600;color:${isPrimary?'var(--accent)':'var(--accent2)'}">Dim ${di+1}${isPrimary?' (giá)':''}</span>
+        <input class="fi" value="${dim.key}" placeholder="Key name (US Size, Color...)" onchange="editorVarDims[${di}].key=this.value;updateVarSummary()" style="flex:1;font-size:12px">
+        ${di>0?`<button class="btn btn-d btn-sm" onclick="editorVarDims.splice(${di},1);renderVarDimensions()" style="font-size:10px">🗑️</button>`:''}
+      </div>
+      <div style="display:flex;gap:4px;margin-bottom:4px;font-size:10px;color:var(--text3)">
+        <span style="flex:2">Giá trị</span>${isPrimary?'<span style="flex:1">Giá ($)</span>':''}
+        <span style="width:30px"></span>
+      </div>
+      ${valRows}
+      <button class="btn btn-o btn-sm" onclick="editorVarDims[${di}].values.push({v:'',p:''});renderVarDimensions()" style="font-size:11px;margin-top:4px">+ Thêm</button>
+    `;
+    el.appendChild(div);
   });
+  updateVarSummary();
 }
-function addVarRow(){editorVars.push({s:'',p:''});renderEditorVars()}
+
+function addVarDimension(){
+  editorVarDims.push({key:'Color',values:[{v:'Black'},{v:'White'},{v:'Red'}]});
+  renderVarDimensions();
+}
+
+function updateVarSummary(){
+  const el=document.getElementById('edVarSummary');
+  if(!editorVarDims.length){el.innerHTML='Chưa có variation';return;}
+  const dims=editorVarDims.filter(d=>d.key&&d.values.some(v=>v.v));
+  if(!dims.length){el.innerHTML='Chưa có variation hợp lệ';return;}
+  let totalCombos=1;
+  dims.forEach(d=>{const valid=d.values.filter(v=>v.v).length;totalCombos*=valid||1;});
+  const keys=dims.map(d=>`<b>${d.key}</b> (${d.values.filter(v=>v.v).length})`).join(' × ');
+  el.innerHTML=`📊 ${keys} = <b>${totalCombos} variation rows</b> per listing`;
+}
+
+// Legacy compat
+function renderEditorVars(){renderVarDimensions()}
+function addVarRow(){if(editorVarDims.length)editorVarDims[0].values.push({v:'',p:''});renderVarDimensions()}
 
 function renderEditorMockups(){
   const el=document.getElementById('edMkList');el.innerHTML='';
@@ -759,12 +819,18 @@ function saveProduct(){
   });
   // Collect CSV defaults from template column editor too
   collectCsvDefaults();
+  // Build legacy variations from first dimension for backward compat
+  const dim0=editorVarDims[0]||{key:'Size',values:[]};
+  const legacyVars=dim0.values.filter(v=>v.v).map(v=>({s:v.v,p:v.p||'0'}));
+  
   products[key]={
     name,icon:document.getElementById('edIcon').value||'📦',
     category:document.getElementById('edCat').value,
-    varKey:document.getElementById('edVarKey').value||'US Size',
+    catName:document.getElementById('edCatName').value||'',
+    varKey:dim0.key||'US Size',
+    varDims:JSON.parse(JSON.stringify(editorVarDims.filter(d=>d.key&&d.values.some(v=>v.v)))),
     specifics:specifics,
-    variations:editorVars.filter(v=>v.s),
+    variations:legacyVars,
     mockups:editorMockups.filter(u=>u),
     desc:document.getElementById('edDesc').value,
     csvHeaders:editorCsvHeaders.length?[...editorCsvHeaders]:null,
@@ -839,7 +905,16 @@ function parse(){
   });
   document.getElementById('btnGo').disabled=!listings.length;stats();
 }
-function stats(){const n=listings.length,P=products[curType];document.getElementById('sL').textContent=n;document.getElementById('sR').textContent=P?n*(1+P.variations.length):0}
+function stats(){
+  const n=listings.length,P=products[curType];
+  document.getElementById('sL').textContent=n;
+  if(!P){document.getElementById('sR').textContent=0;return;}
+  // Calculate total combos
+  const dims=P.varDims||[{key:P.varKey,values:P.variations.map(v=>({v:v.s}))}];
+  let combos=1;
+  dims.filter(d=>d.key&&d.values.some(v=>v.v)).forEach(d=>{combos*=d.values.filter(v=>v.v).length||1;});
+  document.getElementById('sR').textContent=n*(1+combos);
+}
 function prev(){
   if(!listings.length){document.getElementById('prevSec').style.display='none';return}
   document.getElementById('prevSec').style.display='block';
@@ -1049,8 +1124,6 @@ function genCSV(){
   // Add header row
   rows.push(headers);
   
-  const sizeList=P.variations.map(v=>v.s).join(';');
-  
   for(const l of listings){
     if(l.status!=='ok')continue;
     const p=new Array(NC).fill('');
@@ -1084,9 +1157,14 @@ function genCSV(){
     setCol('Payment profile name', globalConfig.payment);
     setCol('PaymentProfileName', globalConfig.payment);
     
-    // Relationship details (variations)
+    // Build variation combo list for parent Relationship details
+    const varDims=P.varDims||[{key:P.varKey||'Size',values:P.variations.map(v=>({v:v.s,p:v.p}))}];
+    const validDims=varDims.filter(d=>d.key&&d.values.some(v=>v.v));
+    
+    // Parent relationship details: Key1=val1;val2|Key2=val3;val4
+    const relParts=validDims.map(d=>d.key+'='+d.values.filter(v=>v.v).map(v=>v.v).join(';'));
     const relIdx=findCol('Relationship details');
-    if(relIdx!==-1) p[relIdx]=P.varKey+'='+sizeList;
+    if(relIdx!==-1) p[relIdx]=relParts.join('|');
     
     // Images
     const imgIdx=findCol('Item photo URL');
@@ -1103,23 +1181,35 @@ function genCSV(){
       });
     }
     
-    // Start price (first variation price or first)
+    // Start price (first dimension, first value)
     const priceIdx=findCol('Start price');
     const priceIdx2=findCol('StartPrice');
     const pIdx=priceIdx!==-1?priceIdx:priceIdx2;
-    if(pIdx!==-1 && P.variations.length) p[pIdx]=P.variations[0].p;
+    if(pIdx!==-1 && validDims.length && validDims[0].values.length) p[pIdx]=validDims[0].values[0].p||'0';
     
     rows.push(p);
     
-    // Variation rows
-    P.variations.forEach(v=>{
+    // Generate variation child rows: all combinations
+    const combos=[];
+    function buildCombos(dimIdx, current, price){
+      if(dimIdx>=validDims.length){combos.push({pairs:[...current],price});return;}
+      const dim=validDims[dimIdx];
+      dim.values.filter(v=>v.v).forEach(v=>{
+        current.push({key:dim.key,val:v.v});
+        buildCombos(dimIdx+1, current, dimIdx===0?(v.p||price):price);
+        current.pop();
+      });
+    }
+    buildCombos(0,[],validDims[0]?.values?.[0]?.p||'0');
+    
+    combos.forEach(combo=>{
       const vr=new Array(NC).fill('');
       setColArr(vr, headers, 'Relationship', 'Variation');
-      setColArr(vr, headers, 'Relationship details', P.varKey+'='+v.s);
-      // Price in variation
+      setColArr(vr, headers, 'Relationship details', combo.pairs.map(p=>p.key+'='+p.val).join('|'));
+      // Price
       const spIdx=findCol('Start price');
       const spIdx2=findCol('StartPrice');
-      if(spIdx!==-1)vr[spIdx]=v.p; else if(spIdx2!==-1)vr[spIdx2]=v.p;
+      if(spIdx!==-1)vr[spIdx]=combo.price; else if(spIdx2!==-1)vr[spIdx2]=combo.price;
       // Quantity
       const qIdx=findCol('Quantity');
       if(qIdx!==-1)vr[qIdx]='1';
@@ -1300,9 +1390,10 @@ function removeCsvCol(idx){
 }
 
 function collectCsvDefaults(){
-  editorCsvDefaults={};
+  // Merge CSV column editor values into editorCsvDefaults (don't reset - Item Specifics may have set values)
   document.querySelectorAll('#csvColsBody [data-csvcol]').forEach(el=>{
-    if(el.value.trim())editorCsvDefaults[el.dataset.csvcol]=el.value.trim();
+    if(el.value.trim()) editorCsvDefaults[el.dataset.csvcol]=el.value.trim();
+    else delete editorCsvDefaults[el.dataset.csvcol];
   });
 }
 
