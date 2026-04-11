@@ -98,6 +98,11 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 .mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-top:6px}
 .mk-thumb{width:100%;aspect-ratio:1;border-radius:6px;border:1px solid var(--border);object-fit:cover;background:var(--bg)}
 .mk-item{display:flex;flex-direction:column;gap:3px}
+.csv-type{font-size:10px;padding:1px 5px;border-radius:3px;font-weight:600}
+.csv-type-req{background:rgba(220,38,38,.1);color:var(--red)}
+.csv-type-spec{background:rgba(79,70,229,.08);color:var(--accent2)}
+.csv-type-policy{background:rgba(100,116,139,.1);color:var(--text2)}
+.csv-type-safety{background:rgba(217,119,6,.1);color:var(--orange)}
 .mk-item label{font-size:12px;color:var(--text3);text-align:center}
 
 /* DESC EDITOR */
@@ -371,6 +376,31 @@ Original title: {{TITLE}}</textarea>
         <div class="mk-grid" id="edMkPreview" style="padding:0 14px 14px"></div>
       </div>
 
+      <!-- CSV Template -->
+      <div class="card" style="margin:12px 0">
+        <div class="card-h">
+          <h2>📊 CSV Template (eBay Columns)</h2>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-o btn-sm" onclick="document.getElementById('csvTplUpload').click()">📂 Upload CSV Template</button>
+            <input type="file" id="csvTplUpload" accept=".csv,.xlsx" style="display:none" onchange="uploadCsvTemplate(event)">
+            <button class="btn btn-o btn-sm" onclick="downloadCsvTemplate()">📥 Download</button>
+          </div>
+        </div>
+        <div class="card-b">
+          <p style="font-size:11px;color:var(--text2);margin-bottom:8px">Cột CSV sẽ được dùng khi generate file. Upload file CSV template từ eBay để cập nhật. Chỉnh sửa giá trị mặc định cho từng cột.</p>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:6px" id="csvTplInfo"></div>
+          <div style="max-height:350px;overflow:auto;border:1px solid var(--border);border-radius:6px">
+            <table class="ptbl" style="font-size:12px">
+              <thead><tr><th style="width:30px">#</th><th>Column Name</th><th style="width:80px">Type</th><th style="min-width:160px">Default Value</th><th style="width:40px"></th></tr></thead>
+              <tbody id="csvColsBody"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:6px;display:flex;gap:5px">
+            <button class="btn btn-o btn-sm" onclick="addCsvCol()">+ Thêm cột</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Description HTML -->
       <div class="card" style="margin:12px 0">
         <div class="card-h"><h2>📄 Description HTML</h2></div>
@@ -404,27 +434,43 @@ const DEFAULT_PRODUCTS = {
     specifics:{brand:"Unbranded",size:"S-5XL",type:"T-shirt",sizeType:"Regular",color:"MultiColor",dept:"Unisex Adult",fit:"Regular fit",sleeve:"Short Sleeve",personalize:"Yes",persInstr:"Please indicate the shirt color you would like and customize it as needed!"},
     variations:[{s:"S",p:"15.99"},{s:"M",p:"17.99"},{s:"L",p:"19.99"},{s:"XL",p:"21.99"},{s:"2XL",p:"22.99"},{s:"3XL",p:"23.99"},{s:"4XL",p:"24.99"},{s:"5XL",p:"25.99"}],
     mockups:["https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/eec93afd-b541-4809-446a-75c657d48300/public","https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/cc3bda12-c2eb-4a80-04ca-258824b5d300/public","https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/b0782d80-afe2-4353-635a-c7f0868d2500/public","https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/fdf315b4-55f5-4c43-023e-b7df31301900/public","https://imagedelivery.net/utSTvbm3ZkHB4E2bv6QYCw/331981e1-7226-49df-559f-f28056f20200/public"],
-    desc:DEFAULT_DESC("Classic Unisex T-Shirt Gildan 5000","Premium DTG print, soft cotton, comfortable fit.","<strong>Features:</strong> 5.3 oz cotton, double-needle stitching, reinforced shoulders, crew neck.","<strong>Material:</strong> 100% cotton (standard), 50/50 (dark/heather)","S, M, L, XL, 2XL, 3XL, 4XL, 5XL","40+ colors available")},
+    desc:DEFAULT_DESC("Classic Unisex T-Shirt Gildan 5000","Premium DTG print, soft cotton, comfortable fit.","<strong>Features:</strong> 5.3 oz cotton, double-needle stitching, reinforced shoulders, crew neck.","<strong>Material:</strong> 100% cotton (standard), 50/50 (dark/heather)","S, M, L, XL, 2XL, 3XL, 4XL, 5XL","40+ colors available"),
+    csvHeaders:["*Action(SiteID=US|Country=US|Currency=USD|Version=1193)","Custom label (SKU)","Category ID","Category name","Title","Relationship","Relationship details","Schedule Time","P:UPC","P:EPID","Start price","Quantity","Item photo URL","VideoID","Condition ID","Description","Format","Duration","Buy It Now price","Best Offer Enabled","Best Offer Auto Accept Price","Minimum Best Offer Price","Immediate pay required","Location","Shipping service 1 option","Shipping service 1 cost","Shipping service 1 priority","Shipping service 2 option","Shipping service 2 cost","Shipping service 2 priority","Max dispatch time","Returns accepted option","Returns within option","Refund option","Return shipping cost paid by","Shipping profile name","Return profile name","Payment profile name","ProductCompliancePolicyID","Regional ProductCompliancePolicies","C:Brand","C:Size Type","C:Size","C:Color","C:Department","C:Type","C:Theme","C:Sleeve Length","C:Character","C:Pattern","C:Character Family","C:Country of Origin","C:Features","C:Neckline","C:Material","C:Fit","C:Vintage","Product Safety Pictograms","Product Safety Statements","Product Safety Component","Regulatory Document Ids","Manufacturer Name","Manufacturer AddressLine1","Manufacturer AddressLine2","Manufacturer City","Manufacturer Country","Manufacturer PostalCode","Manufacturer StateOrProvince","Manufacturer Phone","Manufacturer Email","Manufacturer ContactURL","Responsible Person 1","Responsible Person 1 Type","Responsible Person 1 AddressLine1","Responsible Person 1 AddressLine2","Responsible Person 1 City","Responsible Person 1 Country","Responsible Person 1 PostalCode","Responsible Person 1 StateOrProvince","Responsible Person 1 Phone","Responsible Person 1 Email","Responsible Person 1 ContactURL"],
+    infoRows:[["#INFO","Created=1775864246968"],["#INFO","Version=1.0","","Template=fx_category_template_EBAY_US"],["#INFO"]],
+    csvDefaults:{"P:UPC":"Does not apply","Condition ID":"1000","Format":"FixedPrice","Duration":"GTC","Immediate pay required":"true"}},
   tshirt3d:{name:"T-Shirt 3D",icon:"🎨",category:"15687",varKey:"US Size",
     specifics:{brand:"Unbranded",size:"S-5XL",type:"T-shirt",sizeType:"Regular",color:"MultiColor",dept:"Unisex Adult",fit:"Regular fit",sleeve:"Short Sleeve",personalize:"Yes",persInstr:"Please indicate the size!"},
     variations:[{s:"S",p:"24.99"},{s:"M",p:"26.99"},{s:"L",p:"28.99"},{s:"XL",p:"30.99"},{s:"2XL",p:"32.99"},{s:"3XL",p:"34.99"},{s:"4XL",p:"36.99"},{s:"5XL",p:"38.99"}],
-    mockups:[],desc:DEFAULT_DESC("All-Over Print 3D T-Shirt — Premium Sublimation","Edge-to-edge vivid print. Won't crack, peel, or fade.","<strong>Features:</strong> Full sublimation (front, back, sleeves), lightweight, moisture-wicking.","<strong>Material:</strong> 95% Polyester, 5% Spandex","S, M, L, XL, 2XL, 3XL, 4XL, 5XL","Full color sublimation")},
+    mockups:[],desc:DEFAULT_DESC("All-Over Print 3D T-Shirt — Premium Sublimation","Edge-to-edge vivid print. Won't crack, peel, or fade.","<strong>Features:</strong> Full sublimation (front, back, sleeves), lightweight, moisture-wicking.","<strong>Material:</strong> 95% Polyester, 5% Spandex","S, M, L, XL, 2XL, 3XL, 4XL, 5XL","Full color sublimation"),
+    csvHeaders:["*Action(SiteID=US|Country=US|Currency=USD|Version=1193)","Custom label (SKU)","Category ID","Category name","Title","Relationship","Relationship details","Schedule Time","P:UPC","P:EPID","Start price","Quantity","Item photo URL","VideoID","Condition ID","Description","Format","Duration","Buy It Now price","Best Offer Enabled","Best Offer Auto Accept Price","Minimum Best Offer Price","Immediate pay required","Location","Shipping service 1 option","Shipping service 1 cost","Shipping service 1 priority","Shipping service 2 option","Shipping service 2 cost","Shipping service 2 priority","Max dispatch time","Returns accepted option","Returns within option","Refund option","Return shipping cost paid by","Shipping profile name","Return profile name","Payment profile name","ProductCompliancePolicyID","Regional ProductCompliancePolicies","C:Brand","C:Size Type","C:Size","C:Color","C:Department","C:Type","C:Theme","C:Sleeve Length","C:Character","C:Pattern","C:Character Family","C:Country of Origin","C:Features","C:Neckline","C:Material","C:Fit","C:Vintage","Product Safety Pictograms","Product Safety Statements","Product Safety Component","Regulatory Document Ids","Manufacturer Name","Manufacturer AddressLine1","Manufacturer AddressLine2","Manufacturer City","Manufacturer Country","Manufacturer PostalCode","Manufacturer StateOrProvince","Manufacturer Phone","Manufacturer Email","Manufacturer ContactURL","Responsible Person 1","Responsible Person 1 Type","Responsible Person 1 AddressLine1","Responsible Person 1 AddressLine2","Responsible Person 1 City","Responsible Person 1 Country","Responsible Person 1 PostalCode","Responsible Person 1 StateOrProvince","Responsible Person 1 Phone","Responsible Person 1 Email","Responsible Person 1 ContactURL"],
+    infoRows:[["#INFO","Created=1775864246968"],["#INFO","Version=1.0","","Template=fx_category_template_EBAY_US"],["#INFO"]],
+    csvDefaults:{"P:UPC":"Does not apply","Condition ID":"1000","Format":"FixedPrice","Duration":"GTC","Immediate pay required":"true"}},
   poster_art:{name:"Art Poster",icon:"🎨",category:"28009",varKey:"Size",
     specifics:{brand:"Unbranded",type:"Art Poster",subject:"Art Print",style:"Modern",color:"MultiColor",material:"Paper",features:"Unframed",originalReproduction:"Reproduction"},
     variations:[{s:'8"x10"',p:"9.99"},{s:'11"x14"',p:"14.99"},{s:'16"x20"',p:"19.99"},{s:'18"x24"',p:"24.99"},{s:'24"x36"',p:"34.99"}],
-    mockups:[],desc:DEFAULT_DESC("Premium Art Poster — Museum Quality Print","Stunning giclée art print on archival paper. Vibrant colors, sharp detail.","<strong>Features:</strong> 250gsm archival matte, fade-resistant inks, ships flat in rigid mailer.","<strong>Paper:</strong> Acid-free, lignin-free archival matte",'8"x10", 11"x14", 16"x20", 18"x24", 24"x36"',"Full color giclée print")},
+    mockups:[],desc:DEFAULT_DESC("Premium Art Poster — Museum Quality Print","Stunning giclée art print on archival paper. Vibrant colors, sharp detail.","<strong>Features:</strong> 250gsm archival matte, fade-resistant inks, ships flat in rigid mailer.","<strong>Paper:</strong> Acid-free, lignin-free archival matte",'8"x10", 11"x14", 16"x20", 18"x24", 24"x36"',"Full color giclée print"),
+    csvHeaders:["*Action(SiteID=US|Country=US|Currency=USD|Version=1193)","Custom label (SKU)","Category ID","Category name","Title","Relationship","Relationship details","Schedule Time","P:EPID","Start price","Quantity","Item photo URL","VideoID","Condition ID","Description","Format","Duration","Buy It Now price","Best Offer Enabled","Best Offer Auto Accept Price","Minimum Best Offer Price","Immediate pay required","Location","Shipping service 1 option","Shipping service 1 cost","Shipping service 1 priority","Shipping service 2 option","Shipping service 2 cost","Shipping service 2 priority","Max dispatch time","Returns accepted option","Returns within option","Refund option","Return shipping cost paid by","Shipping profile name","Return profile name","Payment profile name","ProductCompliancePolicyID","Regional ProductCompliancePolicies","C:Subject","C:Year of Production","C:Franchise","C:Character","C:Size","C:Theme","C:Features","C:Featured Person/Artist","C:Original/Licensed Reprint","C:Style","C:Artist","C:Material","C:Culture","C:Time Period Manufactured","C:Region of Origin","C:Type","C:Item Height","C:Item Length","C:Item Width","Product Safety Pictograms","Product Safety Statements","Product Safety Component","Regulatory Document Ids","Manufacturer Name","Manufacturer AddressLine1","Manufacturer AddressLine2","Manufacturer City","Manufacturer Country","Manufacturer PostalCode","Manufacturer StateOrProvince","Manufacturer Phone","Manufacturer Email","Manufacturer ContactURL","Responsible Person 1","Responsible Person 1 Type","Responsible Person 1 AddressLine1","Responsible Person 1 AddressLine2","Responsible Person 1 City","Responsible Person 1 Country","Responsible Person 1 PostalCode","Responsible Person 1 StateOrProvince","Responsible Person 1 Phone","Responsible Person 1 Email","Responsible Person 1 ContactURL"],
+    infoRows:[["#INFO","Created=1775863891540"],["#INFO","Version=1.0","","Template=fx_category_template_EBAY_US"],["#INFO"]],
+    csvDefaults:{"Condition ID":"1000","Format":"FixedPrice","Duration":"GTC","C:Original/Licensed Reprint":"Original","C:Type":"Poster","C:Material":"Matte Paper","C:Year of Production":"2026","C:Time Period Manufactured":"2020-Now"}},
   poster_decor:{name:"Décor Poster",icon:"🖼️",category:"41511",varKey:"Size",
     specifics:{brand:"Unbranded",type:"Poster",theme:"Art",color:"MultiColor",room:"Living Room",material:"Paper",style:"Modern",features:"Unframed"},
     variations:[{s:'8"x10"',p:"9.99"},{s:'11"x14"',p:"14.99"},{s:'16"x20"',p:"19.99"},{s:'18"x24"',p:"24.99"},{s:'24"x36"',p:"34.99"}],
-    mockups:[],desc:DEFAULT_DESC("Home Décor Wall Art Poster","Beautiful wall art to transform any room. Premium quality print.","<strong>Features:</strong> 250gsm matte paper, vivid fade-resistant colors, ships flat.","<strong>Material:</strong> Premium archival paper",'8"x10", 11"x14", 16"x20", 18"x24", 24"x36"',"Full color print")},
+    mockups:[],desc:DEFAULT_DESC("Home Décor Wall Art Poster","Beautiful wall art to transform any room. Premium quality print.","<strong>Features:</strong> 250gsm matte paper, vivid fade-resistant colors, ships flat.","<strong>Material:</strong> Premium archival paper",'8"x10", 11"x14", 16"x20", 18"x24", 24"x36"',"Full color print"),
+    csvHeaders:["*Action(SiteID=US|Country=US|Currency=USD|Version=1193)","Custom label (SKU)","Category ID","Category name","Title","Relationship","Relationship details","Schedule Time","P:EPID","Start price","Quantity","Item photo URL","VideoID","Condition ID","Description","Format","Duration","Buy It Now price","Best Offer Enabled","Best Offer Auto Accept Price","Minimum Best Offer Price","Immediate pay required","Location","Shipping service 1 option","Shipping service 1 cost","Shipping service 1 priority","Shipping service 2 option","Shipping service 2 cost","Shipping service 2 priority","Max dispatch time","Returns accepted option","Returns within option","Refund option","Return shipping cost paid by","Shipping profile name","Return profile name","Payment profile name","ProductCompliancePolicyID","Regional ProductCompliancePolicies","C:Subject","C:Year of Production","C:Franchise","C:Character","C:Size","C:Theme","C:Features","C:Featured Person/Artist","C:Original/Licensed Reprint","C:Style","C:Artist","C:Material","C:Culture","C:Time Period Manufactured","C:Region of Origin","C:Type","C:Item Height","C:Item Length","C:Item Width","Product Safety Pictograms","Product Safety Statements","Product Safety Component","Regulatory Document Ids","Manufacturer Name","Manufacturer AddressLine1","Manufacturer AddressLine2","Manufacturer City","Manufacturer Country","Manufacturer PostalCode","Manufacturer StateOrProvince","Manufacturer Phone","Manufacturer Email","Manufacturer ContactURL","Responsible Person 1","Responsible Person 1 Type","Responsible Person 1 AddressLine1","Responsible Person 1 AddressLine2","Responsible Person 1 City","Responsible Person 1 Country","Responsible Person 1 PostalCode","Responsible Person 1 StateOrProvince","Responsible Person 1 Phone","Responsible Person 1 Email","Responsible Person 1 ContactURL"],
+    infoRows:[["#INFO","Created=1775863891540"],["#INFO","Version=1.0","","Template=fx_category_template_EBAY_US"],["#INFO"]],
+    csvDefaults:{"Condition ID":"1000","Format":"FixedPrice","Duration":"GTC","C:Type":"Poster","C:Material":"Paper","C:Style":"Modern"}},
   mug:{name:"Mug",icon:"☕",category:"20695",varKey:"Size",
     specifics:{brand:"Unbranded",type:"Coffee Mug",color:"White",material:"Ceramic",capacity:"11 oz",features:"Dishwasher Safe, Microwave Safe",theme:"Novelty",character:""},
     variations:[{s:"11oz",p:"16.99"},{s:"15oz",p:"19.99"}],
-    mockups:[],desc:DEFAULT_DESC("Custom Ceramic Coffee Mug","Premium sublimation print, perfect gift for any occasion.","<strong>Features:</strong> Professional sublimation, dishwasher & microwave safe, C-handle, glossy finish.","<strong>Material:</strong> High-quality white ceramic, lead-free, BPA-free","11oz (standard), 15oz (large)","White ceramic with full-color print")},
+    mockups:[],desc:DEFAULT_DESC("Custom Ceramic Coffee Mug","Premium sublimation print, perfect gift for any occasion.","<strong>Features:</strong> Professional sublimation, dishwasher & microwave safe, C-handle, glossy finish.","<strong>Material:</strong> High-quality white ceramic, lead-free, BPA-free","11oz (standard), 15oz (large)","White ceramic with full-color print"),
+    csvHeaders:["*Action(SiteID=US|Country=US|Currency=USD|Version=1193)","Custom label (SKU)","Category ID","Category name","Title","Relationship","Relationship details","Schedule Time","P:UPC","P:EPID","Start price","Quantity","Item photo URL","VideoID","Condition ID","Description","Format","Duration","Buy It Now price","Best Offer Enabled","Best Offer Auto Accept Price","Minimum Best Offer Price","Immediate pay required","Location","Shipping service 1 option","Shipping service 1 cost","Shipping service 1 priority","Shipping service 2 option","Shipping service 2 cost","Shipping service 2 priority","Max dispatch time","Returns accepted option","Returns within option","Refund option","Return shipping cost paid by","Shipping profile name","Return profile name","Payment profile name","TakeBackPolicyID","Regional TakeBackPolicies","ProductCompliancePolicyID","Regional ProductCompliancePolicies","EcoParticipationFee","C:Type","C:Brand","C:Color","C:Set Includes","C:Theme","C:Pattern","C:Material","C:Occasion","C:Service For","C:Features","C:Character Family","C:Country of Origin","C:Capacity","C:MPN","Product Safety Pictograms","Product Safety Statements","Product Safety Component","Regulatory Document Ids","Manufacturer Name","Manufacturer AddressLine1","Manufacturer AddressLine2","Manufacturer City","Manufacturer Country","Manufacturer PostalCode","Manufacturer StateOrProvince","Manufacturer Phone","Manufacturer Email","Manufacturer ContactURL","Responsible Person 1","Responsible Person 1 Type","Responsible Person 1 AddressLine1","Responsible Person 1 AddressLine2","Responsible Person 1 City","Responsible Person 1 Country","Responsible Person 1 PostalCode","Responsible Person 1 StateOrProvince","Responsible Person 1 Phone","Responsible Person 1 Email","Responsible Person 1 ContactURL"],
+    infoRows:[["#INFO","Created=1775864729260"],["#INFO","Version=1.0","","Template=fx_category_template_EBAY_US"],["#INFO"]],
+    csvDefaults:{"P:UPC":"Does not apply","Condition ID":"1000","Format":"FixedPrice","Duration":"GTC","Immediate pay required":"true","C:Type":"Coffee Mug","C:Brand":"Unbranded","C:Material":"Ceramic","C:Capacity":"11 fl oz","C:Service For":"1"}},
   phonecase:{name:"Phone Case",icon:"📱",category:"20349",varKey:"Compatible Model",
     specifics:{brand:"Unbranded",type:"Fitted Case/Skin",compatibleBrand:"Universal",color:"MultiColor",material:"Polycarbonate",features:"Wireless Charging Compatible, Raised Edges",designFinish:"Glossy"},
     variations:[{s:"iPhone 15",p:"19.99"},{s:"iPhone 15 Pro",p:"19.99"},{s:"iPhone 15 Pro Max",p:"21.99"},{s:"iPhone 14",p:"17.99"},{s:"iPhone 14 Pro",p:"19.99"},{s:"Samsung Galaxy S24",p:"19.99"},{s:"Samsung Galaxy S24 Ultra",p:"21.99"}],
-    mockups:[],desc:DEFAULT_DESC("Custom Phone Case — Tough Protection","Dual-layer case with stunning UV print. Slim profile, full protection.","<strong>Features:</strong> Polycarbonate + TPU dual-layer, raised edges for screen & camera, wireless charging compatible, precise cutouts.","<strong>Material:</strong> Hard polycarbonate back + flexible TPU bumper","iPhone 15/Pro/Max, iPhone 14/Pro, Samsung Galaxy S24/Ultra","Full color UV print")}
+    mockups:[],desc:DEFAULT_DESC("Custom Phone Case — Tough Protection","Dual-layer case with stunning UV print. Slim profile, full protection.","<strong>Features:</strong> Polycarbonate + TPU dual-layer, raised edges for screen & camera, wireless charging compatible, precise cutouts.","<strong>Material:</strong> Hard polycarbonate back + flexible TPU bumper","iPhone 15/Pro/Max, iPhone 14/Pro, Samsung Galaxy S24/Ultra","Full color UV print"),
+    csvHeaders:null,infoRows:null,csvDefaults:{}}
 };
 
 // Category presets: defines which item specifics fields to show per category
@@ -543,7 +589,7 @@ function renderPTGrid(){
     d.innerHTML=`
       <div class="ico">${v.icon}</div>
       <div class="name">${v.name}</div>
-      <div class="meta">Category: ${v.category} | ${v.variations.length} variations | ${v.mockups.length} mockups</div>
+      <div class="meta">Category: ${v.category} | ${v.variations.length} variations | ${v.mockups.length} mockups${v.csvHeaders?' | ✅ '+v.csvHeaders.length+' CSV cols':' | ⚠️ Legacy CSV'}</div>
       <div style="margin-top:6px"><span class="badge">${v.varKey}: ${v.variations.map(x=>x.s).join(', ')}</span></div>
       <div class="acts">
         <button class="btn btn-o btn-sm" onclick="openEditor('${k}')">✏️ Sửa</button>
@@ -585,6 +631,11 @@ function openEditor(idOrNew){
   renderEditorVars();renderEditorMockups();
   document.getElementById('edDesc').value=P?P.desc:'';
   updateDescPreview();
+  // CSV template
+  editorCsvHeaders=P&&P.csvHeaders?[...P.csvHeaders]:[];
+  editorCsvDefaults=P&&P.csvDefaults?{...P.csvDefaults}:{};
+  window._editorInfoRows=P&&P.infoRows?JSON.parse(JSON.stringify(P.infoRows)):[];
+  renderCsvCols();
   // Render dynamic specifics fields
   renderSpecificsFields(P?P.category:'15687', P?P.specifics:null);
   document.getElementById('editorModal').classList.add('show');
@@ -676,6 +727,8 @@ function saveProduct(){
   document.querySelectorAll('#edSpecificsGrid [data-spec]').forEach(el=>{
     specifics[el.dataset.spec]=el.value;
   });
+  // Collect CSV defaults from editor
+  collectCsvDefaults();
   products[key]={
     name,icon:document.getElementById('edIcon').value||'📦',
     category:document.getElementById('edCat').value,
@@ -683,7 +736,10 @@ function saveProduct(){
     specifics:specifics,
     variations:editorVars.filter(v=>v.s),
     mockups:editorMockups.filter(u=>u),
-    desc:document.getElementById('edDesc').value
+    desc:document.getElementById('edDesc').value,
+    csvHeaders:editorCsvHeaders.length?[...editorCsvHeaders]:null,
+    infoRows:window._editorInfoRows&&window._editorInfoRows.length?JSON.parse(JSON.stringify(window._editorInfoRows)):null,
+    csvDefaults:Object.keys(editorCsvDefaults).length?{...editorCsvDefaults}:{}
   };
   save();closeEditor();renderPTGrid();renderGenTabs();
   if(curType===key||!curType){curType=key;selectProduct(key)}
@@ -927,69 +983,122 @@ async function startProcess(){
 
 function genCSV(){
   const P=products[curType];if(!P)return[HDRS];
-  HDRS[0]=globalConfig.actionHeader;
   
-  // Map specifics field keys to CSV column header names
+  // Use product-specific csvHeaders if available, otherwise fall back to legacy HDRS
+  const useNewTemplate = P.csvHeaders && P.csvHeaders.length > 0;
+  const headers = useNewTemplate ? [...P.csvHeaders] : [...HDRS];
+  if(!useNewTemplate) headers[0]=globalConfig.actionHeader;
+  
+  const NC=headers.length;
+  const col=(name)=>headers.indexOf(name); // find column index by name
+  
+  // Map legacy specifics keys to eBay CSV column names
   const SPEC_TO_COL={
-    brand:'*C:Brand',size:'*C:Size',type:'*C:Type',sizeType:'*C:Size Type',
-    color:'*C:Color',dept:'*C:Department',theme:'C:Theme',fit:'C:Fit',
+    brand:'C:Brand',size:'C:Size',type:'C:Type',sizeType:'C:Size Type',
+    color:'C:Color',dept:'C:Department',theme:'C:Theme',fit:'C:Fit',
     character:'C:Character',sleeve:'C:Sleeve Length',pattern:'C:Pattern',
     neckline:'C:Neckline',material:'C:Material',personalize:'C:Personalize',
     persInstr:'C:Personalization Instructions',features:'C:Features',
-    subject:'C:Subject',style:'C:Style',originalReproduction:'C:Original/Reproduction',
+    subject:'C:Subject',style:'C:Style',originalReproduction:'C:Original/Licensed Reprint',
     room:'C:Room',capacity:'C:Capacity',compatibleBrand:'C:Compatible Brand',
     designFinish:'C:Design/Finish'
   };
+  // Also try with * prefix for required fields
+  const findCol=(name)=>{let i=col(name);if(i===-1)i=col('*'+name);return i;};
   
-  // Build dynamic headers: base headers + any extra C: columns not in default
-  const baseHdrs=[...HDRS];
-  const extraCols={};
-  if(P.specifics){
-    Object.entries(P.specifics).forEach(([key,val])=>{
-      if(!val)return;
-      const colName=SPEC_TO_COL[key]||('C:'+FIELD_LABELS[key]||key);
-      const idx=baseHdrs.indexOf(colName);
-      if(idx===-1){
-        // Not in default headers, add as extra column
-        extraCols[key]={name:colName,idx:baseHdrs.length};
-        baseHdrs.push(colName);
-      }
-    });
-  }
-  const totalCols=baseHdrs.length;
+  const infoRows = P.infoRows || [];
+  const rows=[];
   
-  const rows=[baseHdrs];const sizeList=P.variations.map(v=>v.s).join(';');
+  // Add #INFO rows
+  infoRows.forEach(ir=>{
+    const r=new Array(NC).fill('');
+    ir.forEach((v,i)=>{if(i<NC)r[i]=v;});
+    rows.push(r);
+  });
+  
+  // Add header row
+  rows.push(headers);
+  
+  const sizeList=P.variations.map(v=>v.s).join(';');
+  
   for(const l of listings){
     if(l.status!=='ok')continue;
-    const p=new Array(totalCols).fill('');
-    p[0]='Add';p[2]=P.category;p[4]=l.title;p[7]=P.varKey+'='+sizeList;p[8]='1000';
+    const p=new Array(NC).fill('');
+    
+    // Apply csvDefaults first
+    if(P.csvDefaults){
+      Object.entries(P.csvDefaults).forEach(([k,v])=>{
+        const i=findCol(k);if(i!==-1)p[i]=v;
+      });
+    }
+    
+    // Core fields by name
+    const setCol=(name,val)=>{const i=findCol(name);if(i!==-1&&val)p[i]=val;};
+    
+    // Action
+    const actIdx=headers.findIndex(h=>h.startsWith('*Action'));
+    if(actIdx!==-1)p[actIdx]='Add';
+    
+    setCol('Custom label (SKU)', curType+'_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6));
+    setCol('Category ID', P.category);
+    setCol('Title', l.title);
+    setCol('Condition ID', '1000');
+    setCol('Description', P.desc);
+    setCol('Format', 'FixedPrice');
+    setCol('Duration', 'GTC');
+    setCol('Location', globalConfig.location);
+    setCol('Shipping profile name', globalConfig.shipping);
+    setCol('ShippingProfileName', globalConfig.shipping);
+    setCol('Return profile name', globalConfig.returns);
+    setCol('ReturnProfileName', globalConfig.returns);
+    setCol('Payment profile name', globalConfig.payment);
+    setCol('PaymentProfileName', globalConfig.payment);
+    
+    // Relationship details (variations)
+    const relIdx=findCol('Relationship details');
+    if(relIdx!==-1) p[relIdx]=P.varKey+'='+sizeList;
+    
+    // Images
+    const imgIdx=findCol('Item photo URL');
+    const picIdx=findCol('PicURL');
+    const imgColIdx = imgIdx!==-1 ? imgIdx : picIdx;
+    if(imgColIdx!==-1) p[imgColIdx]=[l.cfUrl,...P.mockups].filter(u=>u).join(' | ');
     
     // Fill specifics dynamically
     if(P.specifics){
       Object.entries(P.specifics).forEach(([key,val])=>{
         if(!val)return;
-        const colName=SPEC_TO_COL[key]||('C:'+FIELD_LABELS[key]||key);
-        let idx=HDRS.indexOf(colName);
-        if(idx===-1 && extraCols[key]) idx=extraCols[key].idx;
-        if(idx!==-1) p[idx]=val;
+        const colName=SPEC_TO_COL[key]||('C:'+((FIELD_LABELS[key])||key));
+        setCol(colName, val);
       });
     }
     
-    p[40]=[l.cfUrl,...P.mockups].filter(u=>u).join(' | ');
-    p[43]=P.desc;p[44]='FixedPrice';p[45]='GTC';p[53]=globalConfig.location;
-    // Business policies - find correct indices in potentially extended headers
-    const shipIdx=baseHdrs.indexOf('ShippingProfileName');
-    const retIdx=baseHdrs.indexOf('ReturnProfileName');
-    const payIdx=baseHdrs.indexOf('PaymentProfileName');
-    if(shipIdx!==-1)p[shipIdx]=globalConfig.shipping;
-    if(retIdx!==-1)p[retIdx]=globalConfig.returns;
-    if(payIdx!==-1)p[payIdx]=globalConfig.payment;
+    // Start price (first variation price or first)
+    const priceIdx=findCol('Start price');
+    const priceIdx2=findCol('StartPrice');
+    const pIdx=priceIdx!==-1?priceIdx:priceIdx2;
+    if(pIdx!==-1 && P.variations.length) p[pIdx]=P.variations[0].p;
+    
     rows.push(p);
     
-    P.variations.forEach(v=>{const vr=new Array(totalCols).fill('');vr[6]='Variation';vr[7]=P.varKey+'='+v.s;vr[46]=v.p;vr[51]='1';rows.push(vr)});
+    // Variation rows
+    P.variations.forEach(v=>{
+      const vr=new Array(NC).fill('');
+      setColArr(vr, headers, 'Relationship', 'Variation');
+      setColArr(vr, headers, 'Relationship details', P.varKey+'='+v.s);
+      // Price in variation
+      const spIdx=findCol('Start price');
+      const spIdx2=findCol('StartPrice');
+      if(spIdx!==-1)vr[spIdx]=v.p; else if(spIdx2!==-1)vr[spIdx2]=v.p;
+      // Quantity
+      const qIdx=findCol('Quantity');
+      if(qIdx!==-1)vr[qIdx]='1';
+      rows.push(vr);
+    });
   }
   return rows;
 }
+function setColArr(arr,hdrs,name,val){const i=hdrs.indexOf(name);if(i===-1){const j=hdrs.indexOf('*'+name);if(j!==-1)arr[j]=val;}else arr[i]=val;}
 function downloadCSV(rows){
   const csv=rows.map(r=>r.map(c=>{const s=String(c);return(s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s}).join(',')).join('\n');
   const P=products[curType];
@@ -1104,6 +1213,124 @@ function toast(m,t){const el=document.getElementById('toast');el.textContent=m;e
 // Input listeners
 document.getElementById('inputArea').addEventListener('input',()=>{parse();prev()});
 document.getElementById('inputArea').addEventListener('paste',()=>setTimeout(()=>{parse();prev()},50));
+
+// ================================================================
+// CSV TEMPLATE EDITOR
+// ================================================================
+let editorCsvHeaders=[];
+let editorCsvDefaults={};
+
+function renderCsvCols(){
+  const tbody=document.getElementById('csvColsBody');
+  if(!tbody)return;
+  tbody.innerHTML='';
+  const info=document.getElementById('csvTplInfo');
+  if(!editorCsvHeaders||!editorCsvHeaders.length){
+    info.innerHTML='⚠️ Chưa có CSV template. Upload file CSV từ eBay hoặc dùng template mặc định.';
+    return;
+  }
+  const specs=editorCsvHeaders.filter(h=>h.startsWith('C:')).length;
+  info.innerHTML=`✅ ${editorCsvHeaders.length} cột • ${specs} item specifics`;
+  
+  editorCsvHeaders.forEach((h,i)=>{
+    if(!h)return;
+    const tr=document.createElement('tr');
+    let type='',cls='';
+    if(h.startsWith('C:')){type='Specific';cls='csv-type-spec';}
+    else if(h.includes('Safety')||h.includes('Manufacturer')||h.includes('Responsible')){type='Safety';cls='csv-type-safety';}
+    else if(h.includes('profile')||h.includes('Profile')||h.includes('policy')||h.includes('Policy')){type='Policy';cls='csv-type-policy';}
+    else if(h.startsWith('*')||['Title','Category ID','Start price','Quantity','Condition ID','Format','Duration','Description'].includes(h)){type='Core';cls='csv-type-req';}
+    
+    const defVal=editorCsvDefaults[h]||'';
+    tr.innerHTML=`<td style="text-align:center;color:var(--text3);font-size:11px">${i+1}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${h}</td>
+      <td><span class="csv-type ${cls}">${type}</span></td>
+      <td><input class="fi" style="padding:4px 8px;font-size:12px" data-csvcol="${h}" value="${defVal.replace(/"/g,'&quot;')}" placeholder="—"></td>
+      <td><button class="btn btn-d btn-sm" onclick="removeCsvCol(${i})" style="padding:2px 6px;font-size:10px">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function addCsvCol(){
+  const name=prompt('Tên cột mới (vd: C:NewField):');
+  if(!name)return;
+  // Insert before safety columns
+  const safetyIdx=editorCsvHeaders.findIndex(h=>h.startsWith('Product Safety'));
+  if(safetyIdx>-1)editorCsvHeaders.splice(safetyIdx,0,name);
+  else editorCsvHeaders.push(name);
+  renderCsvCols();
+}
+
+function removeCsvCol(idx){
+  const name=editorCsvHeaders[idx];
+  if(!confirm(`Xóa cột "${name}"?`))return;
+  editorCsvHeaders.splice(idx,1);
+  delete editorCsvDefaults[name];
+  renderCsvCols();
+}
+
+function collectCsvDefaults(){
+  editorCsvDefaults={};
+  document.querySelectorAll('#csvColsBody [data-csvcol]').forEach(el=>{
+    if(el.value.trim())editorCsvDefaults[el.dataset.csvcol]=el.value.trim();
+  });
+}
+
+function uploadCsvTemplate(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const text=e.target.result;
+    const rows=text.split('\n').map(line=>{
+      // Simple CSV parse
+      const result=[];let field='',inQ=false;
+      for(let i=0;i<line.length;i++){
+        const ch=line[i];
+        if(inQ){if(ch==='"'){if(line[i+1]==='"'){field+='"';i++}else inQ=false}else field+=ch}
+        else{if(ch==='"')inQ=true;else if(ch===','){result.push(field);field=''}else field+=ch}
+      }
+      result.push(field);return result;
+    });
+    
+    // Find header row
+    let headerIdx=-1;
+    const newInfoRows=[];
+    for(let i=0;i<Math.min(rows.length,10);i++){
+      if(rows[i][0]&&rows[i][0].trim().startsWith('*Action')){headerIdx=i;break;}
+      if(rows[i][0]&&rows[i][0].trim().startsWith('#INFO'))newInfoRows.push(rows[i]);
+    }
+    if(headerIdx===-1){toast('Không tìm thấy header row (*Action...)','er');return;}
+    
+    editorCsvHeaders=rows[headerIdx].map(h=>h.trim()).filter(h=>h);
+    editorCsvDefaults={};
+    
+    // Also update infoRows in editor state
+    if(newInfoRows.length) window._editorInfoRows=newInfoRows;
+    
+    renderCsvCols();
+    toast(`✅ Imported ${editorCsvHeaders.length} cột từ CSV`,'ok');
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+function downloadCsvTemplate(){
+  if(!editorCsvHeaders||!editorCsvHeaders.length){toast('Không có template để download','er');return;}
+  const rows=[];
+  if(window._editorInfoRows){
+    window._editorInfoRows.forEach(r=>{
+      const row=new Array(editorCsvHeaders.length).fill('');
+      r.forEach((v,i)=>{if(i<row.length)row[i]=v;});
+      rows.push(row);
+    });
+  }
+  rows.push(editorCsvHeaders);
+  const csv=rows.map(r=>r.map(c=>{const s=String(c||'');return(s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s}).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='csv_template_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  toast('📥 Downloaded CSV template','ok');
+}
 
 init();
 </script>
