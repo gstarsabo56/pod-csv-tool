@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POD CSV Generator v5.8 — Country Selector</title>
+<title>POD CSV Generator v5.9 — Per-Product Policies</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -273,7 +273,7 @@ html[data-theme="light"] .busy-box{box-shadow:0 20px 50px rgba(15,23,42,.2)}
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <div class="logo"><i>⚡</i> POD CSV <span class="badge">v5.8</span></div>
+  <div class="logo"><i>⚡</i> POD CSV <span class="badge">v5.9</span></div>
   <div class="nav-tabs">
     <button class="nav-tab active" data-page="generate" onclick="showPage('generate',this)">📦 Generate</button>
     <button class="nav-tab" data-page="library" onclick="showPage('library',this)">📚 Library</button>
@@ -577,19 +577,19 @@ Custom Cat Lover Poster|https://imagedelivery.net/.../public
 
   <div class="settings-grid">
     <div class="card">
-      <div class="card-h">📍 Location & Policies</div>
+      <div class="card-h">⚙️ Workflow Settings</div>
       <div class="card-b">
         <div class="hint" style="margin-bottom:12px;line-height:1.6">
-          💡 Country (cho Action header) được chọn ở Generate page — không set ở đây. Các field bên dưới áp dụng cho mọi CSV bất kể country.
+          💡 <b>Location/Shipping/Return/Payment/Condition giờ được cấu hình riêng cho từng Product Type</b> (vào <b>🛍️ Products</b> → Sửa). Ở đây chỉ còn các settings dùng chung cho mọi product.
         </div>
-        <div class="field"><label>Location</label><input type="text" id="setLocation" value="" placeholder="VD: New York, USA" oninput="saveSettings()"></div>
-        <div class="field"><label>Shipping Profile Name</label><input type="text" id="setShipping" value="SHIPPING" oninput="saveSettings()"></div>
-        <div class="field"><label>Return Profile Name</label><input type="text" id="setReturn" value="RETURN" oninput="saveSettings()"></div>
-        <div class="field"><label>Payment Profile Name</label><input type="text" id="setPayment" value="PAYMENT" oninput="saveSettings()"></div>
-        <div class="field"><label>Condition ID (1500=New w/o tags)</label><input type="text" id="setCondition" value="1500" oninput="saveSettings()"></div>
         <div class="field"><label>Max listings / file CSV <span style="font-size:10px;color:var(--dim);text-transform:none">(eBay limit ~5000 rows/file)</span></label><input type="number" id="setBatchSize" value="200" min="10" max="5000" oninput="saveSettings()"></div>
         <div class="field"><label>Auto SKU prefix (vd: TS → TS-0001)</label><input type="text" id="setSkuPrefix" value="" placeholder="Để trống = không tạo SKU" oninput="saveSettings()"></div>
-        <!-- v5.8: setCountry hidden — now driven by dropdown on Generate page -->
+        <!-- v5.9: legacy inputs kept hidden for backward compat with any code still reading them -->
+        <input type="hidden" id="setLocation" value="">
+        <input type="hidden" id="setShipping" value="SHIPPING">
+        <input type="hidden" id="setReturn" value="RETURN">
+        <input type="hidden" id="setPayment" value="PAYMENT">
+        <input type="hidden" id="setCondition" value="1500">
         <input type="hidden" id="setCountry" value="US">
       </div>
     </div>
@@ -811,7 +811,7 @@ const KEYS = {
   COUNTRY: 'pod_country_v8'         // v5.8: last-selected country on Generate page
 };
 
-const SCHEMA_VERSION = 8;
+const SCHEMA_VERSION = 9;
 const LIB_PAGE_SIZE = 100;          // render 100 rows/page in library
 const PREVIEW_MAX_ROWS = 50;        // generate page preview cap
 const CSV_CHUNK_SIZE = 200;         // rows per chunk during CSV build
@@ -1009,6 +1009,12 @@ const BUILTIN_PRODUCTS = [
     categoryName: 'T-Shirts',
     format: 'FixedPrice',
     duration: 'GTC',
+    // v5.9: eBay listing policies (per product type, shared across accounts per user request)
+    location: 'Texas, United States',
+    shippingProfile: 'SHIPPING',
+    returnProfile: 'RETURN',
+    paymentProfile: 'PAYMENT',
+    conditionId: '1500',
     itemSpecifics: {
       'C:Brand': 'Gildan',
       'C:Size Type': 'Regular',
@@ -1065,6 +1071,11 @@ const BUILTIN_PRODUCTS = [
     categoryName: 'Art Posters',
     format: 'FixedPrice',
     duration: 'GTC',
+    location: 'Texas, United States',
+    shippingProfile: 'SHIPPING',
+    returnProfile: 'RETURN',
+    paymentProfile: 'PAYMENT',
+    conditionId: '1500',
     itemSpecifics: {
       'C:Subject': 'Art',
       'C:Year of Production': '2025',
@@ -1108,6 +1119,11 @@ const BUILTIN_PRODUCTS = [
     categoryName: 'Coffee Mugs',
     format: 'FixedPrice',
     duration: 'GTC',
+    location: 'Texas, United States',
+    shippingProfile: 'SHIPPING',
+    returnProfile: 'RETURN',
+    paymentProfile: 'PAYMENT',
+    conditionId: '1500',
     itemSpecifics: {
       'C:Type': 'Coffee Mug',
       'C:Brand': 'Unbranded',
@@ -1425,6 +1441,27 @@ function migrate() {
     } catch (e) {}
   }
 
+  // v8 → v9: copy legacy shared Location/Shipping/Return/Payment/Condition from Settings
+  // into every product type. User can then customize per product (e.g. SHIPPING_2D vs SHIPPING_3D).
+  if (oldVersion < 9) {
+    const legacyS = storageGet(KEYS.SETTINGS, {});
+    const savedProducts = storageGet(KEYS.PRODUCTS, []);
+    if (savedProducts.length && (legacyS.location || legacyS.shipping || legacyS.condition)) {
+      let patched = 0;
+      for (const p of savedProducts) {
+        if (!p.location && legacyS.location)               { p.location        = legacyS.location; patched++; }
+        if (!p.shippingProfile && legacyS.shipping)        { p.shippingProfile = legacyS.shipping; patched++; }
+        if (!p.returnProfile && legacyS.returns)           { p.returnProfile   = legacyS.returns;  patched++; }
+        if (!p.paymentProfile && legacyS.payment)          { p.paymentProfile  = legacyS.payment;  patched++; }
+        if (!p.conditionId && legacyS.condition)           { p.conditionId     = legacyS.condition; patched++; }
+      }
+      if (patched) {
+        storageSet(KEYS.PRODUCTS, savedProducts);
+        console.log(`[migrate v8→v9] copied legacy Settings into ${savedProducts.length} product types (${patched} field sets)`);
+      }
+    }
+  }
+
   storageSet(KEYS.VERSION, SCHEMA_VERSION);
   console.log('[migrate] complete');
 }
@@ -1547,26 +1584,28 @@ function init() {
 }
 
 function getSettings() {
-  // v5.8: country comes from Generate page dropdown (selectedCountry var).
-  // Location/Shipping/Return/Payment/Condition come from Settings inputs (same for all countries).
+  // v5.9: location/shipping/return/payment/condition come from ACTIVE PRODUCT TYPE.
+  // Country from Generate page dropdown (selectedCountry).
+  // Batch/SKU/AI from Settings page.
+  const p = (typeof getActiveProduct === 'function') ? getActiveProduct() : null;
   return {
-    location: document.getElementById('setLocation')?.value || '',
-    shipping: document.getElementById('setShipping')?.value || 'SHIPPING',
-    returns:  document.getElementById('setReturn')?.value   || 'RETURN',
-    payment:  document.getElementById('setPayment')?.value  || 'PAYMENT',
-    country:  (typeof selectedCountry !== 'undefined' && selectedCountry) ? selectedCountry : 'US',
-    condition:document.getElementById('setCondition')?.value || '1500',
-    batchSize: parseInt(document.getElementById('setBatchSize')?.value) || 200,
-    skuPrefix: (document.getElementById('setSkuPrefix')?.value || '').trim(),
-    vaName: (document.getElementById('setVaName')?.value || '').trim(),
-    sheetUrl: (document.getElementById('setSheetUrl')?.value || '').trim(),
-    aiPrompt: document.getElementById('setAiPrompt')?.value || '',
-    aiModel: document.getElementById('setAiModel')?.value || '',
-    aiBatch: parseInt(document.getElementById('setAiBatch')?.value) || 25,
+    location:   p?.location        || '',
+    shipping:   p?.shippingProfile || 'SHIPPING',
+    returns:    p?.returnProfile   || 'RETURN',
+    payment:    p?.paymentProfile  || 'PAYMENT',
+    condition:  p?.conditionId     || '1500',
+    country:    (typeof selectedCountry !== 'undefined' && selectedCountry) ? selectedCountry : 'US',
+    batchSize:  parseInt(document.getElementById('setBatchSize')?.value) || 200,
+    skuPrefix:  (document.getElementById('setSkuPrefix')?.value || '').trim(),
+    vaName:     (document.getElementById('setVaName')?.value || '').trim(),
+    sheetUrl:   (document.getElementById('setSheetUrl')?.value || '').trim(),
+    aiPrompt:   document.getElementById('setAiPrompt')?.value || '',
+    aiModel:    document.getElementById('setAiModel')?.value || '',
+    aiBatch:    parseInt(document.getElementById('setAiBatch')?.value) || 25,
     // v5.1: multi-provider API keys
-    apiKey: (document.getElementById('setApiKeyAnthropic') || {}).value || '',
-    apiKeyOpenAI: (document.getElementById('setApiKeyOpenAI') || {}).value || '',
-    apiKeyGemini: (document.getElementById('setApiKeyGemini') || {}).value || '',
+    apiKey:         (document.getElementById('setApiKeyAnthropic') || {}).value || '',
+    apiKeyOpenAI:   (document.getElementById('setApiKeyOpenAI') || {}).value || '',
+    apiKeyGemini:   (document.getElementById('setApiKeyGemini') || {}).value || '',
     apiKeyDeepSeek: (document.getElementById('setApiKeyDeepSeek') || {}).value || ''
   };
 }
@@ -2560,6 +2599,10 @@ function renderProductTypes() {
           <div><b>Item Specifics:</b> ${specCount} filled ${reqCount ? `(<span class="req">*</span>${reqCount} required${emptyReq ? `, <span style="color:var(--red)">${emptyReq} trống</span>` : ' ✓'})` : ''}</div>
           <div><b>Mockups:</b> ${p.mockups ? p.mockups.length : 0}</div>
           <div><b>Description:</b> ${p.description ? '✅' : '❌'}</div>
+          <div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);color:var(--accent)">
+            🚚 <b>${esc(p.shippingProfile || 'SHIPPING')}</b> · ↩️ ${esc(p.returnProfile || 'RETURN')} · 💳 ${esc(p.paymentProfile || 'PAYMENT')}
+          </div>
+          <div style="color:var(--dim);font-size:11px">📍 ${esc(p.location || '—')} · Condition ${esc(p.conditionId || '1500')}</div>
         </div>
       </div>
     `;
@@ -2572,6 +2615,9 @@ function openProductModal(p) {
     id: 'custom_' + Date.now(),
     name: '', icon: '📦', category: '', categoryName: '',
     format: 'FixedPrice', duration: 'GTC',
+    // v5.9: eBay listing policies per product type
+    location: '', shippingProfile: 'SHIPPING', returnProfile: 'RETURN',
+    paymentProfile: 'PAYMENT', conditionId: '1500',
     itemSpecifics: {},
     requiredSpecs: [],
     extraHeaders: ['P:UPC', 'P:EPID'],
@@ -2621,6 +2667,24 @@ function openProductModal(p) {
         <button class="btn btn-sm btn-ghost" onclick="removeLastVar()">− Remove</button>
       </div>
     </div>
+
+    <!-- v5.9: eBay Listing Policies section -->
+    <div style="margin:18px 0;padding:14px;background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.25);border-radius:8px">
+      <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:4px">🚚 eBay Listing Policies</div>
+      <div style="font-size:11px;color:var(--dim);margin-bottom:12px;line-height:1.5">
+        Shipping/Return/Payment profile names phải khớp chính xác với Business Policies đã tạo trong eBay Seller Hub. Mỗi product type có bộ policy riêng (VD: 2D dùng <code>SHIPPING_2D</code>, 3D dùng <code>SHIPPING_3D</code>).
+      </div>
+      <div class="field"><label>Location</label><input type="text" id="ptLocation" value="${esc(p.location || '')}" placeholder="VD: Texas, United States"></div>
+      <div class="row2">
+        <div class="field"><label>Shipping Profile Name</label><input type="text" id="ptShipping" value="${esc(p.shippingProfile || 'SHIPPING')}" placeholder="SHIPPING"></div>
+        <div class="field"><label>Return Profile Name</label><input type="text" id="ptReturn" value="${esc(p.returnProfile || 'RETURN')}" placeholder="RETURN"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Payment Profile Name</label><input type="text" id="ptPayment" value="${esc(p.paymentProfile || 'PAYMENT')}" placeholder="PAYMENT"></div>
+        <div class="field"><label>Condition ID <span style="font-size:10px;color:var(--dim);text-transform:none">(1500=New w/o tags, 1000=New)</span></label><input type="text" id="ptCondition" value="${esc(p.conditionId || '1500')}" placeholder="1500"></div>
+      </div>
+    </div>
+
     <div class="field"><label>Extra P: Headers (comma separated)</label>
       <input type="text" id="ptExtraHeaders" value="${esc((p.extraHeaders || []).join(', '))}">
     </div>
@@ -2691,6 +2755,13 @@ function saveProductModal(id, isNew) {
 
   p.extraHeaders = document.getElementById('ptExtraHeaders').value.split(',').map(s => s.trim()).filter(Boolean);
   p.requiredSpecs = document.getElementById('ptRequiredSpecs').value.split(',').map(s => s.trim()).filter(Boolean);
+
+  // v5.9: read eBay Listing Policies per product type
+  p.location        = (document.getElementById('ptLocation')?.value || '').trim();
+  p.shippingProfile = (document.getElementById('ptShipping')?.value || '').trim() || 'SHIPPING';
+  p.returnProfile   = (document.getElementById('ptReturn')?.value   || '').trim() || 'RETURN';
+  p.paymentProfile  = (document.getElementById('ptPayment')?.value  || '').trim() || 'PAYMENT';
+  p.conditionId     = (document.getElementById('ptCondition')?.value|| '').trim() || '1500';
 
   const varRows = document.getElementById('varRows').children;
   p.variations = [];
