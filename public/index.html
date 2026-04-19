@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POD CSV Generator v5.4 — Team Edition</title>
+<title>POD CSV Generator v5.6 — Team Edition</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -273,7 +273,7 @@ html[data-theme="light"] .busy-box{box-shadow:0 20px 50px rgba(15,23,42,.2)}
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <div class="logo"><i>⚡</i> POD CSV <span class="badge">v5.4</span></div>
+  <div class="logo"><i>⚡</i> POD CSV <span class="badge">v5.6</span></div>
   <div class="nav-tabs">
     <button class="nav-tab active" data-page="generate" onclick="showPage('generate',this)">📦 Generate</button>
     <button class="nav-tab" data-page="library" onclick="showPage('library',this)">📚 Library</button>
@@ -305,7 +305,7 @@ html[data-theme="light"] .busy-box{box-shadow:0 20px 50px rgba(15,23,42,.2)}
           <span>📋 Nhập dữ liệu</span>
           <div style="display:flex;gap:4px">
             <button class="btn btn-sm btn-ghost" onclick="loadSample()">Sample</button>
-            <button class="btn btn-sm btn-ghost" onclick="document.getElementById('inputArea').value='';parseInput()">Clear</button>
+            <button class="btn btn-sm btn-ghost" onclick="clearDraft()">Clear</button>
           </div>
         </div>
         <div class="card-b">
@@ -318,9 +318,9 @@ Custom Cat Lover Poster|https://imagedelivery.net/.../public
 
 💡 Hoặc paste từ Excel: Title[TAB]URL
 ⚡ Hỗ trợ 5000-10000 listings/lần — UI không lag nhờ chunked processing" spellcheck="false" oninput="parseInputDebounced()"></textarea>
-          <div class="hint">
-            <strong>Format:</strong> <code>Title|URL</code> hoặc <code>Title[TAB]URL</code> — mỗi dòng 1 sản phẩm.
-            Ảnh phụ (mockup) tự thêm từ config product type.
+          <div class="hint" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+            <span><strong>Format:</strong> <code>Title|URL</code> hoặc <code>Title[TAB]URL</code> — mỗi dòng 1 sản phẩm. Ảnh phụ (mockup) tự thêm từ config product type.</span>
+            <span id="draftStatus" style="font-size:11px;color:var(--dim);white-space:nowrap"></span>
           </div>
 
           <!-- v5.3: 2 primary buttons side-by-side -->
@@ -794,7 +794,8 @@ const KEYS = {
   LIBRARY: 'pod_library_v3',
   LIBRARY_TRASH: 'pod_library_trash_v4',
   VERSION: 'pod_version',
-  THEME: 'pod_theme_v5'
+  THEME: 'pod_theme_v5',
+  DRAFT: 'pod_draft_v6'             // v5.6: auto-saved textarea content
 };
 
 const SCHEMA_VERSION = 6;
@@ -1467,6 +1468,9 @@ function init() {
 
   // v5.2: render company config status (safe to call — checks for element existence)
   if (typeof refreshCompanyConfigStatus === 'function') refreshCompanyConfigStatus();
+
+  // v5.6: restore paste-work draft if user refreshed page accidentally
+  if (typeof loadDraft === 'function') loadDraft();
 }
 
 function getSettings() {
@@ -1583,7 +1587,66 @@ function updateSidebar() {
 // ═══════════════════════════════════════════════════════════
 // PARSE INPUT (debounced + optimized for 10k+ lines)
 // ═══════════════════════════════════════════════════════════
-const parseInputDebounced = debounce(parseInput, 200);
+const parseInputDebounced = debounce(() => { parseInput(); saveDraft(); }, 200);
+
+// v5.6: auto-save draft so refresh/accident close doesn't lose paste-work
+function saveDraft() {
+  try {
+    const raw = document.getElementById('inputArea')?.value || '';
+    const product = activeProductId;
+    const statusEl = document.getElementById('draftStatus');
+    if (raw.trim()) {
+      storageSet(KEYS.DRAFT, { text: raw, product, savedAt: Date.now() });
+      if (statusEl) {
+        const d = new Date();
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        const ss = String(d.getSeconds()).padStart(2, '0');
+        statusEl.innerHTML = `<span style="color:var(--green)">💾 Đã lưu draft lúc ${hh}:${mm}:${ss}</span>`;
+      }
+    } else {
+      // Empty input → clear draft
+      localStorage.removeItem(KEYS.DRAFT);
+      if (statusEl) statusEl.innerHTML = '';
+    }
+  } catch (e) { /* quota — silent */ }
+}
+
+function loadDraft() {
+  try {
+    const draft = storageGet(KEYS.DRAFT, null);
+    if (!draft || !draft.text) return;
+
+    const ta = document.getElementById('inputArea');
+    if (!ta) return;
+
+    // Only restore if textarea is empty (don't clobber active work)
+    if (ta.value.trim()) return;
+
+    ta.value = draft.text;
+    // Switch product type if draft was saved with a specific product
+    if (draft.product && productTypes.find(p => p.id === draft.product)) {
+      activeProductId = draft.product;
+      renderProductSelector();
+      updateSidebar();
+    }
+    parseInput();
+
+    // Show unobtrusive toast
+    const age = Math.round((Date.now() - (draft.savedAt || 0)) / 60000); // minutes
+    toast(`💾 Đã khôi phục draft (${draft.text.split('\n').filter(l=>l.trim()).length} dòng, ${age} phút trước)`, 'ok');
+  } catch (e) {
+    console.error('loadDraft error', e);
+  }
+}
+
+function clearDraft() {
+  const ta = document.getElementById('inputArea');
+  if (ta) ta.value = '';
+  localStorage.removeItem(KEYS.DRAFT);
+  parseInput();
+  toast('🗑️ Đã xóa draft', 'ok');
+}
 
 function parseInput() {
   const raw = document.getElementById('inputArea').value.trim();
@@ -1714,8 +1777,23 @@ function buildRow(headers, values) {
   return row;
 }
 
+// v5.6: Generate timestamp-based SKU that's unique across all VAs without coordination.
+// Format: {prefix}-{YY}{MM}{DD}{HH}{MM}{SS}{RR}{NNN}
+//   YYMMDDHHMMSS = batch creation time (12 digits)
+//   RR = 2-char random (collision protection if two VAs hit same second)
+//   NNN = listing index in this batch (3 digits, up to 999 listings/batch)
+// Example: TS-260419213245K701
+function makeBatchSkuBase() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const r1 = CHARS[Math.floor(Math.random() * CHARS.length)];
+  const r2 = CHARS[Math.floor(Math.random() * CHARS.length)];
+  return `${pad(d.getFullYear() % 100)}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}${r1}${r2}`;
+}
+
 // Build one listing's row-group (parent + variations). Reused by generateCSV + generateFromLibrary + dryRun
-function buildListingGroup(listing, product, headers, settings, seqIdx) {
+function buildListingGroup(listing, product, headers, settings, seqIdx, batchSkuBase) {
   const actionHeader = headers[0];
   const skuPrefix = settings.skuPrefix;
   const groupRows = [];
@@ -1749,7 +1827,10 @@ function buildListingGroup(listing, product, headers, settings, seqIdx) {
     .replace(/""+/g, '"')           // collapse multiple escaped quotes  ""zxx"" → "zxx"
     .replace(/\r\n/g, '\n');         // normalize line endings
   const desc = descRaw;
-  const sku = skuPrefix ? `${skuPrefix}-${String(seqIdx + 1).padStart(4, '0')}` : '';
+  // v5.6: timestamp-based SKU with 4-digit index suffix (supports 9999/session)
+  const skuBase = batchSkuBase || makeBatchSkuBase();
+  const idxSuffix = String(seqIdx + 1).padStart(4, '0');
+  const sku = skuPrefix ? `${skuPrefix}-${skuBase}${idxSuffix}` : '';
 
   const parent = {};
   parent[actionHeader] = 'Add';
@@ -1832,6 +1913,8 @@ async function generateCSV(listingsOverride, productOverride) {
   try {
     let totalRows = 0;
     const headerLine = headers.map(csvEscape).join(',');
+    // v5.6: one SKU base timestamp for all listings across all batch files (same export session)
+    const skuBase = makeBatchSkuBase();
 
     for (let batch = 0; batch < totalBatches; batch++) {
       const start = batch * batchSize;
@@ -1841,7 +1924,7 @@ async function generateCSV(listingsOverride, productOverride) {
       const parts = [headerLine];
 
       for (let i = start; i < end; i++) {
-        const group = buildListingGroup(listings[i], product, headers, settings, i);
+        const group = buildListingGroup(listings[i], product, headers, settings, i, skuBase);
         for (const row of group) parts.push(row.map(csvEscape).join(','));
         totalRows += group.length;
 
