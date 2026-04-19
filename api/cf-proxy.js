@@ -1,60 +1,79 @@
-module.exports = async function handler(req, res) {
+// Vercel Serverless Function — proxy requests to Cloudflare Images API
+// Reads CF credentials from environment variables (set in Vercel dashboard)
+//
+// Deployed at: https://<your-project>.vercel.app/api/cf-proxy
+//
+// Browser → this proxy → Cloudflare API → browser
+// Solves CORS + hides the API token from client code.
+
+export default async function handler(req, res) {
+  // CORS headers — allow browser to call this proxy from any origin
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-action');
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  // Preflight request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
+  // Read credentials from env vars (NOT from client — security)
   const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
-  const CF_API_TOKEN = process.env.CF_API_TOKEN;
+  const CF_TOKEN = process.env.CF_TOKEN;
 
-  if (!CF_ACCOUNT_ID || !CF_API_TOKEN) {
-    return res.status(500).json({ 
+  if (!CF_ACCOUNT_ID || !CF_TOKEN) {
+    return res.status(500).json({
       success: false,
-      error: 'CF credentials not configured. Add CF_ACCOUNT_ID and CF_API_TOKEN in Vercel Environment Variables.' 
+      errors: [{ message: 'Server not configured: CF_ACCOUNT_ID or CF_TOKEN env vars missing in Vercel' }]
     });
   }
 
   try {
-    const endpoint = req.query.endpoint || 'stats';
-    let cfUrl;
+    // Action determined by query param: ?action=test | upload
+    const action = (req.query.action || '').toLowerCase();
 
-    if (endpoint === 'stats') {
-      cfUrl = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/images/v1/stats`;
-    } else if (endpoint === 'upload') {
-      cfUrl = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/images/v1`;
-    } else {
-      return res.status(400).json({ success: false, error: 'Invalid endpoint' });
-    }
-
-    const authHeader = `Bearer ${CF_API_TOKEN}`;
-
-    if (req.method === 'POST' && endpoint === 'upload') {
-      const chunks = [];
-      for await (const chunk of req) chunks.push(chunk);
-      const body = Buffer.concat(chunks);
-
-      const cfRes = await fetch(cfUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': authHeader,
-          'Content-Type': req.headers['content-type'],
-        },
-        body: body,
-      });
+    // TEST: lightweight call to verify credentials work
+    if (action === 'test' || req.method === 'GET') {
+      const cfRes = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/images/v1?per_page=1`,
+        { headers: { 'Authorization': `Bearer ${CF_TOKEN}` } }
+      );
       const data = await cfRes.json();
       return res.status(cfRes.status).json(data);
     }
 
-    const cfRes = await fetch(cfUrl, {
-      headers: { 'Authorization': authHeader },
-    });
-    const data = await cfRes.json();
-    return res.status(cfRes.status).json(data);
+    // UPLOAD: POST with body {url, id} — forward to CF as multipart form
+    if (req.method === 'POST') {
+      const body = req.body || {};
+      const imageUrl = body.url;
+      const customId = body.id || `pod_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
 
-  } catch (error) {
-    return res.status(500).json({ success: false, error: error.message });
+      if (!imageUrl) {
+        return res.status(400).json({ success: false, errors: [{ message: 'Missing url in body' }] });
+      }
+
+      // Build multipart form
+      const fd = new FormData();
+      fd.append('url', imageUrl);
+      fd.append('id', customId);
+
+      const cfRes = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/images/v1`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${CF_TOKEN}` },
+          body: fd
+        }
+      );
+      const data = await cfRes.json();
+      return res.status(cfRes.status).json(data);
+    }
+
+    return res.status(405).json({ success: false, errors: [{ message: 'Method not allowed' }] });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      errors: [{ message: err.message || 'Proxy error' }]
+    });
   }
 }
-
-module.exports.config = { api: { bodyParser: false } };
