@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POD CSV Generator v5.9 — Per-Product Policies</title>
+<title>POD CSV Generator v5.10 — Template Match + Per-Product AI</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -273,7 +273,7 @@ html[data-theme="light"] .busy-box{box-shadow:0 20px 50px rgba(15,23,42,.2)}
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <div class="logo"><i>⚡</i> POD CSV <span class="badge">v5.9</span></div>
+  <div class="logo"><i>⚡</i> POD CSV <span class="badge">v5.10</span></div>
   <div class="nav-tabs">
     <button class="nav-tab active" data-page="generate" onclick="showPage('generate',this)">📦 Generate</button>
     <button class="nav-tab" data-page="library" onclick="showPage('library',this)">📚 Library</button>
@@ -811,7 +811,7 @@ const KEYS = {
   COUNTRY: 'pod_country_v8'         // v5.8: last-selected country on Generate page
 };
 
-const SCHEMA_VERSION = 9;
+const SCHEMA_VERSION = 10;
 const LIB_PAGE_SIZE = 100;          // render 100 rows/page in library
 const PREVIEW_MAX_ROWS = 50;        // generate page preview cap
 const CSV_CHUNK_SIZE = 200;         // rows per chunk during CSV build
@@ -1016,11 +1016,11 @@ const BUILTIN_PRODUCTS = [
     paymentProfile: 'PAYMENT',
     conditionId: '1500',
     itemSpecifics: {
-      'C:Brand': 'Gildan',
-      'C:Size Type': 'Regular',
+      'C:Brand': 'Unbranded',
+      'C:Size Type': 'S-5XL',
       'C:Size': 'M',
       'C:Color': 'Black',
-      'C:Department': 'Men',
+      'C:Department': 'Unisex Adult',
       'C:Type': 'T-Shirt',
       'C:Theme': 'Art',
       'C:Sleeve Length': 'Short Sleeve',
@@ -1038,7 +1038,8 @@ const BUILTIN_PRODUCTS = [
       'C:Handmade': 'No',
       'C:Garment Care': 'Machine Washable',
       'C:Accents': 'Logo',
-      'C:Personalize': 'No',
+      'C:Personalize': 'Yes',
+      'C:Personalization Instructions': 'Please indicate the shirt color you would like and customize it as needed!',
       'C:Season': 'Fall, Spring, Summer, Winter',
       'C:Year Manufactured': '2020-2029',
       'C:Model': 'Sportsman',
@@ -1048,20 +1049,34 @@ const BUILTIN_PRODUCTS = [
     requiredSpecs: ['C:Brand', 'C:Size Type', 'C:Size', 'C:Color', 'C:Department'],
     extraHeaders: ['P:UPC', 'P:EPID'],
     hasVariations: true,
-    variationField: 'Size',
-    relationshipPattern: 'Size=S;M;L;XL;2XL;3XL;4XL;5XL',
+    variationField: 'US Size',
+    relationshipPattern: 'US Size=S;M;L;XL;2XL;3XL;4XL;5XL',
     variations: [
-      { label: 'S', price: '15.99', qty: '10' },
-      { label: 'M', price: '17.99', qty: '10' },
-      { label: 'L', price: '19.99', qty: '10' },
-      { label: 'XL', price: '21.99', qty: '10' },
-      { label: '2XL', price: '22.99', qty: '10' },
-      { label: '3XL', price: '23.99', qty: '10' },
-      { label: '4XL', price: '24.99', qty: '10' },
-      { label: '5XL', price: '25.99', qty: '10' }
+      { label: 'S',   price: '13.99', qty: '1' },
+      { label: 'M',   price: '15.99', qty: '1' },
+      { label: 'L',   price: '17.99', qty: '1' },
+      { label: 'XL',  price: '19.99', qty: '1' },
+      { label: '2XL', price: '20.99', qty: '1' },
+      { label: '3XL', price: '21.99', qty: '1' },
+      { label: '4XL', price: '22.99', qty: '1' },
+      { label: '5XL', price: '23.99', qty: '1' }
     ],
     mockups: [],
-    description: DEFAULT_DESCRIPTION_TSHIRT
+    description: DEFAULT_DESCRIPTION_TSHIRT,
+    // v5.10: per-product AI SEO prompt
+    aiPrompt: `You are an eBay SEO title expert for T-shirts. Rewrite the following title for maximum eBay search visibility.
+
+Rules:
+- Max 80 characters
+- Title Case (capitalize each word)
+- MUST end with "T-Shirt" or "Tee" if not already
+- Include high-traffic keywords: Unisex, Vintage, Retro, Funny, Cool, Gift (pick what fits naturally)
+- Keep proper nouns exactly (band names, events, places, movies)
+- Front-load the most searchable keywords
+- Do NOT add quotation marks
+- Return ONLY the rewritten title, nothing else
+
+Original title: {title}`
   },
   {
     id: 'poster',
@@ -1103,13 +1118,26 @@ const BUILTIN_PRODUCTS = [
     variationField: 'Size',
     relationshipPattern: 'Size=12x18in;16x24in;18x24in;24x36in',
     variations: [
-      { label: '12x18in', price: '12.99', qty: '10' },
-      { label: '16x24in', price: '16.99', qty: '10' },
-      { label: '18x24in', price: '19.99', qty: '10' },
-      { label: '24x36in', price: '24.99', qty: '10' }
+      { label: '12x18in', price: '12.99', qty: '1' },
+      { label: '16x24in', price: '16.99', qty: '1' },
+      { label: '18x24in', price: '19.99', qty: '1' },
+      { label: '24x36in', price: '24.99', qty: '1' }
     ],
     mockups: [],
-    description: DEFAULT_DESCRIPTION_POSTER
+    description: DEFAULT_DESCRIPTION_POSTER,
+    aiPrompt: `You are an eBay SEO title expert for art posters. Rewrite the following title for maximum eBay search visibility.
+
+Rules:
+- Max 80 characters
+- Title Case (capitalize each word)
+- MUST include "Poster" or "Wall Art" or "Print"
+- Include high-traffic keywords: Home Decor, Wall Decor, Vintage, Modern, Gift (pick what fits)
+- Keep artist/subject names exactly as given
+- Emphasize visual/artistic aspects
+- Do NOT add quotation marks
+- Return ONLY the rewritten title, nothing else
+
+Original title: {title}`
   },
   {
     id: 'mug',
@@ -1146,11 +1174,24 @@ const BUILTIN_PRODUCTS = [
     variationField: 'Capacity',
     relationshipPattern: 'Capacity=11oz;15oz',
     variations: [
-      { label: '11oz', price: '14.99', qty: '10' },
-      { label: '15oz', price: '17.99', qty: '10' }
+      { label: '11oz', price: '14.99', qty: '1' },
+      { label: '15oz', price: '17.99', qty: '1' }
     ],
     mockups: [],
-    description: DEFAULT_DESCRIPTION_MUG
+    description: DEFAULT_DESCRIPTION_MUG,
+    aiPrompt: `You are an eBay SEO title expert for coffee mugs. Rewrite the following title for maximum eBay search visibility.
+
+Rules:
+- Max 80 characters
+- Title Case (capitalize each word)
+- MUST include "Mug" or "Coffee Mug"
+- Include high-traffic keywords: Ceramic, Gift, Funny, Novelty, Cute (pick what fits)
+- Keep proper nouns exactly (names, events, quotes)
+- Emphasize gift/novelty aspects if applicable
+- Do NOT add quotation marks
+- Return ONLY the rewritten title, nothing else
+
+Original title: {title}`
   }
 ];
 
@@ -1462,6 +1503,44 @@ function migrate() {
     }
   }
 
+  // v9 → v10: fix 2D T-Shirt variation field to match eBay template (Size → US Size),
+  // set default qty=1 on all variations (user request: "số lượng mặc định là 1").
+  // Only patches if user still has old defaults (preserves customizations).
+  if (oldVersion < 10) {
+    const savedProducts = storageGet(KEYS.PRODUCTS, []);
+    let touched = 0;
+    for (const p of savedProducts) {
+      // Fix 2D T-Shirt only if values still match old defaults (user hasn't customized)
+      if (p.id === 'tshirt2d') {
+        const oldPattern = 'Size=S;M;L;XL;2XL;3XL;4XL;5XL';
+        if (p.variationField === 'Size' && p.relationshipPattern === oldPattern) {
+          p.variationField = 'US Size';
+          p.relationshipPattern = 'US Size=S;M;L;XL;2XL;3XL;4XL;5XL';
+          touched++;
+        }
+        const specs = p.itemSpecifics || {};
+        if (specs['C:Size Type'] === 'Regular')          { specs['C:Size Type']  = 'S-5XL'; touched++; }
+        if (specs['C:Brand'] === 'Gildan')               { specs['C:Brand']      = 'Unbranded'; touched++; }
+        if (specs['C:Department'] === 'Men')             { specs['C:Department'] = 'Unisex Adult'; touched++; }
+        if (specs['C:Personalize'] === 'No')             { specs['C:Personalize'] = 'Yes'; touched++; }
+        if (!specs['C:Personalization Instructions']) {
+          specs['C:Personalization Instructions'] = 'Please indicate the shirt color you would like and customize it as needed!';
+          touched++;
+        }
+      }
+      // Set qty=1 on all variations (default change — applies universally)
+      if (Array.isArray(p.variations)) {
+        for (const v of p.variations) {
+          if (v.qty === '10' || v.qty === 10) { v.qty = '1'; touched++; }
+        }
+      }
+    }
+    if (touched) {
+      storageSet(KEYS.PRODUCTS, savedProducts);
+      console.log(`[migrate v9→v10] patched ${touched} fields across ${savedProducts.length} products (2D US Size + qty=1)`);
+    }
+  }
+
   storageSet(KEYS.VERSION, SCHEMA_VERSION);
   console.log('[migrate] complete');
 }
@@ -1599,7 +1678,7 @@ function getSettings() {
     skuPrefix:  (document.getElementById('setSkuPrefix')?.value || '').trim(),
     vaName:     (document.getElementById('setVaName')?.value || '').trim(),
     sheetUrl:   (document.getElementById('setSheetUrl')?.value || '').trim(),
-    aiPrompt:   document.getElementById('setAiPrompt')?.value || '',
+    aiPrompt:   (p?.aiPrompt && p.aiPrompt.trim()) || document.getElementById('setAiPrompt')?.value || '',
     aiModel:    document.getElementById('setAiModel')?.value || '',
     aiBatch:    parseInt(document.getElementById('setAiBatch')?.value) || 25,
     // v5.1: multi-provider API keys
@@ -2618,11 +2697,13 @@ function openProductModal(p) {
     // v5.9: eBay listing policies per product type
     location: '', shippingProfile: 'SHIPPING', returnProfile: 'RETURN',
     paymentProfile: 'PAYMENT', conditionId: '1500',
+    // v5.10: per-product AI SEO prompt (empty = will use global prompt from Settings)
+    aiPrompt: '',
     itemSpecifics: {},
     requiredSpecs: [],
     extraHeaders: ['P:UPC', 'P:EPID'],
     hasVariations: true, variationField: 'Size', relationshipPattern: '',
-    variations: [{ label: 'Default', price: '19.99', qty: '10' }],
+    variations: [{ label: 'Default', price: '19.99', qty: '1' }],
     mockups: [], description: ''
   };
 
@@ -2701,6 +2782,16 @@ function openProductModal(p) {
     <div class="field"><label>Mockup URLs (1 per line)</label>
       <textarea id="ptMockups" rows="4">${esc((p.mockups || []).join('\n'))}</textarea>
     </div>
+
+    <!-- v5.10: per-product AI SEO prompt -->
+    <div style="margin:18px 0;padding:14px;background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.25);border-radius:8px">
+      <div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:4px">🤖 AI Rewrite Prompt</div>
+      <div style="font-size:11px;color:var(--dim);margin-bottom:12px;line-height:1.5">
+        Prompt riêng cho product này khi click <b>"🚀 AI Rewrite + Upload + CSV"</b>. Mỗi product type có keyword SEO khác nhau (T-shirt: Unisex/Cotton, Poster: Wall Art/Print, Mug: Ceramic/Gift). Dùng <code>{title}</code> làm placeholder cho title gốc. Để trống = fallback về prompt global ở Settings.
+      </div>
+      <textarea id="ptAiPrompt" rows="10" style="font-size:12px;line-height:1.5;font-family:'JetBrains Mono',monospace" placeholder="You are an eBay SEO title expert for [PRODUCT TYPE]. Rewrite the following title for maximum eBay search visibility.&#10;&#10;Rules:&#10;- Max 80 characters&#10;- Title Case&#10;- Include keywords: ...&#10;- Return ONLY the rewritten title&#10;&#10;Original title: {title}">${esc(p.aiPrompt || '')}</textarea>
+    </div>
+
     <div class="field"><label>Description HTML <span style="font-size:10px;color:var(--dim);text-transform:none">— dùng {title} để auto chèn title sản phẩm</span></label>
       <textarea id="ptDesc" rows="6">${esc(p.description || '')}</textarea>
     </div>
@@ -2762,6 +2853,9 @@ function saveProductModal(id, isNew) {
   p.returnProfile   = (document.getElementById('ptReturn')?.value   || '').trim() || 'RETURN';
   p.paymentProfile  = (document.getElementById('ptPayment')?.value  || '').trim() || 'PAYMENT';
   p.conditionId     = (document.getElementById('ptCondition')?.value|| '').trim() || '1500';
+
+  // v5.10: per-product AI SEO prompt (trimmed; empty = fallback to global prompt)
+  p.aiPrompt        = (document.getElementById('ptAiPrompt')?.value || '').trim();
 
   const varRows = document.getElementById('varRows').children;
   p.variations = [];
