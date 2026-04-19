@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POD CSV Generator v5.3 — Team Edition</title>
+<title>POD CSV Generator v5.4 — Team Edition</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -273,7 +273,7 @@ html[data-theme="light"] .busy-box{box-shadow:0 20px 50px rgba(15,23,42,.2)}
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <div class="logo"><i>⚡</i> POD CSV <span class="badge">v5.3</span></div>
+  <div class="logo"><i>⚡</i> POD CSV <span class="badge">v5.4</span></div>
   <div class="nav-tabs">
     <button class="nav-tab active" data-page="generate" onclick="showPage('generate',this)">📦 Generate</button>
     <button class="nav-tab" data-page="library" onclick="showPage('library',this)">📚 Library</button>
@@ -1720,13 +1720,35 @@ function buildListingGroup(listing, product, headers, settings, seqIdx) {
   const skuPrefix = settings.skuPrefix;
   const groupRows = [];
 
+  // v5.4: picUrls must be separated by | only. Sanitize each URL to remove any
+  // TAB/newline chars (in case old product config has dirty mockup strings),
+  // and split any multi-URL string on whitespace before joining with |.
   const picUrls = [];
-  if (listing.cfUrl || listing.imgUrl) picUrls.push(listing.cfUrl || listing.imgUrl);
-  if (product.mockups && product.mockups.length) picUrls.push(...product.mockups);
+  const addUrl = (u) => {
+    if (!u) return;
+    // Split if the value itself contains multiple URLs separated by whitespace
+    String(u).split(/[\s\t\n\r]+/).forEach(s => {
+      const cleaned = s.trim();
+      if (cleaned && cleaned.startsWith('http')) picUrls.push(cleaned);
+    });
+  };
+  addUrl(listing.cfUrl || listing.imgUrl);
+  if (product.mockups && product.mockups.length) {
+    product.mockups.forEach(addUrl);
+  }
   const picUrlStr = picUrls.join('|');
 
   const finalTitle = (listing.seoTitle || listing.title).substring(0, 80);
-  const desc = (product.description || '').replace(/\{title\}/gi, finalTitle);
+  // v5.4: Clean up description before CSV escape:
+  // 1. Strip leading/trailing quotes/smart-quotes (avoids """<!doctype cascade)
+  // 2. Decode double-escaped HTML attributes (""zxx"" → "zxx")
+  // 3. Normalize line endings
+  let descRaw = (product.description || '').replace(/\{title\}/gi, finalTitle);
+  descRaw = descRaw.trim()
+    .replace(/^["'\u201C\u201D\u2018\u2019]+|["'\u201C\u201D\u2018\u2019]+$/g, '')
+    .replace(/""+/g, '"')           // collapse multiple escaped quotes  ""zxx"" → "zxx"
+    .replace(/\r\n/g, '\n');         // normalize line endings
+  const desc = descRaw;
   const sku = skuPrefix ? `${skuPrefix}-${String(seqIdx + 1).padStart(4, '0')}` : '';
 
   const parent = {};
@@ -2507,7 +2529,12 @@ function saveProductModal(id, isNew) {
     if (key) p.itemSpecifics[key] = val || '';
   }
 
-  p.mockups = document.getElementById('ptMockups').value.split('\n').map(s => s.trim()).filter(Boolean);
+  // v5.4: split by any whitespace (newline, tab, multiple spaces) so paste from Excel/clipboard
+  // with TAB separators still parses correctly into separate URLs
+  p.mockups = document.getElementById('ptMockups').value
+    .split(/[\s\t\n\r]+/)
+    .map(s => s.trim())
+    .filter(s => s && s.startsWith('http'));
   p.description = document.getElementById('ptDesc').value;
 
   if (isNew) productTypes.push(p);
