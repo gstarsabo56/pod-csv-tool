@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POD CSV Generator v5.7 — Multi-Account Edition</title>
+<title>POD CSV Generator v5.8 — Country Selector</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -273,7 +273,7 @@ html[data-theme="light"] .busy-box{box-shadow:0 20px 50px rgba(15,23,42,.2)}
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <div class="logo"><i>⚡</i> POD CSV <span class="badge">v5.7</span></div>
+  <div class="logo"><i>⚡</i> POD CSV <span class="badge">v5.8</span></div>
   <div class="nav-tabs">
     <button class="nav-tab active" data-page="generate" onclick="showPage('generate',this)">📦 Generate</button>
     <button class="nav-tab" data-page="library" onclick="showPage('library',this)">📚 Library</button>
@@ -283,7 +283,6 @@ html[data-theme="light"] .busy-box{box-shadow:0 20px 50px rgba(15,23,42,.2)}
     <button class="nav-tab" data-page="settings" onclick="showPage('settings',this)">⚙️ Settings</button>
   </div>
   <div class="stats">
-    <span id="activeAccountBadge" onclick="showPage('settings', document.querySelector('button[data-page=settings]'))" title="Click để đổi account" style="cursor:pointer;padding:4px 10px;background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.3);border-radius:6px;font-size:12px;margin-right:4px;display:none"></span>
     <span><b id="sL">0</b> listings</span>
     <span><b id="sR">0</b> rows</span>
     <span><b id="sLib">0</b> library</span>
@@ -310,7 +309,14 @@ html[data-theme="light"] .busy-box{box-shadow:0 20px 50px rgba(15,23,42,.2)}
           </div>
         </div>
         <div class="card-b">
-          <div class="product-selector" id="productSelector"></div>
+          <!-- v5.8: Product chips + Country dropdown in one row -->
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px;flex-wrap:wrap">
+            <div class="product-selector" id="productSelector" style="margin-bottom:0;flex:1;min-width:200px"></div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <label for="countrySelect" style="font-size:12px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap">🌐 Country</label>
+              <select id="countrySelect" onchange="onCountryChange()" style="min-width:220px;padding:8px 10px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;font-size:13px;cursor:pointer"></select>
+            </div>
+          </div>
           <textarea class="paste-area" id="inputArea" placeholder="Mỗi dòng 1 sản phẩm — format: Title|Link ảnh chính
 
 Ví dụ:
@@ -569,35 +575,22 @@ Custom Cat Lover Poster|https://imagedelivery.net/.../public
 <div class="page" id="pg-settings">
   <h2 style="font-size:18px;margin-bottom:16px">⚙️ Settings</h2>
 
-  <!-- v5.7: Account Profiles card — manages list of eBay accounts (PH, US, MY, etc.) -->
-  <div class="card" style="margin-bottom:16px">
-    <div class="card-h">
-      <span>🏢 Account Profiles</span>
-      <button class="btn btn-sm btn-primary" onclick="openAccountModal()">➕ Thêm account</button>
-    </div>
-    <div class="card-b">
-      <div class="hint" style="margin-bottom:12px;line-height:1.6">
-        Mỗi eBay account ở nước khác nhau cần profile riêng (Location, Country, Shipping/Return/Payment profile names). Khi tạo CSV, tool dùng profile của account đang active (⭐). Click nút "⭐ Dùng" để chuyển account.
-      </div>
-      <div id="accountsList"></div>
-    </div>
-  </div>
-
   <div class="settings-grid">
     <div class="card">
-      <div class="card-h">📍 Default Settings <span style="font-size:10px;color:var(--dim);font-weight:400">(fallback khi chưa có account)</span></div>
+      <div class="card-h">📍 Location & Policies</div>
       <div class="card-b">
         <div class="hint" style="margin-bottom:12px;line-height:1.6">
-          ⚠️ Các giá trị dưới đây chỉ dùng khi <b>không có Account Profile nào</b>. Nếu đã tạo account ở card trên, tool sẽ bỏ qua các field này.
+          💡 Country (cho Action header) được chọn ở Generate page — không set ở đây. Các field bên dưới áp dụng cho mọi CSV bất kể country.
         </div>
-        <div class="field"><label>Location</label><input type="text" id="setLocation" value="Kuala Lumpur, Malaysia" oninput="saveSettings()"></div>
+        <div class="field"><label>Location</label><input type="text" id="setLocation" value="" placeholder="VD: New York, USA" oninput="saveSettings()"></div>
         <div class="field"><label>Shipping Profile Name</label><input type="text" id="setShipping" value="SHIPPING" oninput="saveSettings()"></div>
         <div class="field"><label>Return Profile Name</label><input type="text" id="setReturn" value="RETURN" oninput="saveSettings()"></div>
         <div class="field"><label>Payment Profile Name</label><input type="text" id="setPayment" value="PAYMENT" oninput="saveSettings()"></div>
-        <div class="field"><label>Country (Action header)</label><input type="text" id="setCountry" value="US" oninput="saveSettings()"></div>
         <div class="field"><label>Condition ID (1500=New w/o tags)</label><input type="text" id="setCondition" value="1500" oninput="saveSettings()"></div>
         <div class="field"><label>Max listings / file CSV <span style="font-size:10px;color:var(--dim);text-transform:none">(eBay limit ~5000 rows/file)</span></label><input type="number" id="setBatchSize" value="200" min="10" max="5000" oninput="saveSettings()"></div>
         <div class="field"><label>Auto SKU prefix (vd: TS → TS-0001)</label><input type="text" id="setSkuPrefix" value="" placeholder="Để trống = không tạo SKU" oninput="saveSettings()"></div>
+        <!-- v5.8: setCountry hidden — now driven by dropdown on Generate page -->
+        <input type="hidden" id="setCountry" value="US">
       </div>
     </div>
     <div class="card">
@@ -815,11 +808,10 @@ const KEYS = {
   VERSION: 'pod_version',
   THEME: 'pod_theme_v5',
   DRAFT: 'pod_draft_v6',            // v5.6: auto-saved textarea content
-  ACCOUNTS: 'pod_accounts_v7',      // v5.7: list of eBay account profiles
-  ACTIVE_ACCOUNT: 'pod_active_account_v7'  // v5.7: currently selected account id
+  COUNTRY: 'pod_country_v8'         // v5.8: last-selected country on Generate page
 };
 
-const SCHEMA_VERSION = 7;
+const SCHEMA_VERSION = 8;
 const LIB_PAGE_SIZE = 100;          // render 100 rows/page in library
 const PREVIEW_MAX_ROWS = 50;        // generate page preview cap
 const CSV_CHUNK_SIZE = 200;         // rows per chunk during CSV build
@@ -1157,9 +1149,35 @@ let libSelected = new Set();
 let libCurrentPage = 1;
 let currentSortColumn = null;
 let currentSortDir = 1;
-// v5.7: multi-account support
-let accounts = [];
-let activeAccountId = '';
+// v5.8: country selection for Generate page (default US, persisted in localStorage)
+let selectedCountry = 'US';
+
+// v5.8: supported eBay seller countries (23 countries per user's list)
+const COUNTRIES = [
+  { code: 'US', name: 'United States', flag: '🇺🇸' },
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧' },
+  { code: 'AU', name: 'Australia',      flag: '🇦🇺' },
+  { code: 'JP', name: 'Japan',          flag: '🇯🇵' },
+  { code: 'KR', name: 'South Korea',    flag: '🇰🇷' },
+  { code: 'LK', name: 'Sri Lanka',      flag: '🇱🇰' },
+  { code: 'MY', name: 'Malaysia',       flag: '🇲🇾' },
+  { code: 'PH', name: 'Philippines',    flag: '🇵🇭' },
+  { code: 'TR', name: 'Turkey',         flag: '🇹🇷' },
+  { code: 'AR', name: 'Argentina',      flag: '🇦🇷' },
+  { code: 'CL', name: 'Chile',          flag: '🇨🇱' },
+  { code: 'UA', name: 'Ukraine',        flag: '🇺🇦' },
+  { code: 'AE', name: 'UAE',            flag: '🇦🇪' },
+  { code: 'UG', name: 'Uganda',         flag: '🇺🇬' },
+  { code: 'NZ', name: 'New Zealand',    flag: '🇳🇿' },
+  { code: 'MX', name: 'Mexico',         flag: '🇲🇽' },
+  { code: 'KW', name: 'Kuwait',         flag: '🇰🇼' },
+  { code: 'CO', name: 'Colombia',       flag: '🇨🇴' },
+  { code: 'BR', name: 'Brazil',         flag: '🇧🇷' },
+  { code: 'BO', name: 'Bolivia',        flag: '🇧🇴' },
+  { code: 'BW', name: 'Botswana',       flag: '🇧🇼' },
+  { code: 'EC', name: 'Ecuador',        flag: '🇪🇨' },
+  { code: 'ID', name: 'Indonesia',      flag: '🇮🇩' }
+];
 
 // ═══════════════════════════════════════════════════════════
 // UTILS
@@ -1380,27 +1398,31 @@ function migrate() {
     }
   }
 
-  // v6 → v7: auto-create first Account Profile from legacy Settings if user already had settings
-  if (oldVersion < 7) {
-    const existingAccounts = storageGet(KEYS.ACCOUNTS, []);
-    if (!existingAccounts.length) {
-      const legacyS = storageGet(KEYS.SETTINGS, {});
-      if (legacyS.location || legacyS.country) {
-        const autoAccount = {
-          id: 'acc_migrated_' + Date.now(),
-          name: `${legacyS.country || 'US'} Default`,
-          location: legacyS.location || 'Kuala Lumpur, Malaysia',
-          country: legacyS.country || 'US',
-          condition: legacyS.condition || '1500',
-          shipping: legacyS.shipping || 'SHIPPING',
-          returns: legacyS.returns || 'RETURN',
-          payment: legacyS.payment || 'PAYMENT'
-        };
-        storageSet(KEYS.ACCOUNTS, [autoAccount]);
-        storageSet(KEYS.ACTIVE_ACCOUNT, autoAccount.id);
-        console.log('[migrate v6→v7] auto-created default account from legacy settings', autoAccount.name);
+  // v7 → v8: if user was on v5.7 with account profiles, preserve country from active account
+  // and discard the now-unused account data (user explicitly asked to remove accounts feature)
+  if (oldVersion === 7) {
+    // Read obsolete v7 keys directly (KEYS.ACCOUNTS/ACTIVE_ACCOUNT no longer in KEYS const)
+    let oldAccounts = [];
+    let oldActiveId = '';
+    try {
+      const rawAcc = localStorage.getItem('pod_accounts_v7');
+      if (rawAcc) oldAccounts = JSON.parse(rawAcc) || [];
+      const rawActive = localStorage.getItem('pod_active_account_v7');
+      if (rawActive) {
+        // Tolerate both JSON-encoded ("acc_id") and raw (acc_id) formats
+        try { oldActiveId = JSON.parse(rawActive); } catch (e) { oldActiveId = rawActive; }
       }
+    } catch (e) {}
+    const oldActive = oldAccounts.find(a => a.id === oldActiveId) || oldAccounts[0];
+    if (oldActive?.country) {
+      storageSet(KEYS.COUNTRY, oldActive.country);
+      console.log('[migrate v7→v8] preserved country from active account:', oldActive.country);
     }
+    // Clean up obsolete keys
+    try {
+      localStorage.removeItem('pod_accounts_v7');
+      localStorage.removeItem('pod_active_account_v7');
+    } catch (e) {}
   }
 
   storageSet(KEYS.VERSION, SCHEMA_VERSION);
@@ -1507,15 +1529,9 @@ function init() {
   renderLibrary();
   updateStorageIndicator();
 
-  // v5.7: Load account profiles + active account id
-  accounts = storageGet(KEYS.ACCOUNTS, []);
-  activeAccountId = storageGet(KEYS.ACTIVE_ACCOUNT, accounts[0]?.id || '');
-  // Sanity: if active id doesn't exist, fall back to first account
-  if (activeAccountId && !accounts.find(a => a.id === activeAccountId)) {
-    activeAccountId = accounts[0]?.id || '';
-  }
-  if (typeof renderAccountsList === 'function') renderAccountsList();
-  if (typeof updateActiveAccountBadge === 'function') updateActiveAccountBadge();
+  // v5.8: Load last-selected country from localStorage (default US)
+  selectedCountry = storageGet(KEYS.COUNTRY, 'US') || 'US';
+  if (typeof renderCountrySelect === 'function') renderCountrySelect();
 
   // v5.2: If company config has API keys set, auto-persist them to localStorage
   // so subsequent operations (rewriteTitles, CF upload) read from storage correctly.
@@ -1531,18 +1547,15 @@ function init() {
 }
 
 function getSettings() {
-  // v5.7: location/country/shipping/return/payment/condition come from ACTIVE ACCOUNT if one exists.
-  // Fall back to Settings page inputs only for users without any account profile configured.
-  const acc = getActiveAccount();
-  const location = acc ? (acc.location || '') : (document.getElementById('setLocation')?.value || '');
-  const shipping = acc ? (acc.shipping || 'SHIPPING') : (document.getElementById('setShipping')?.value || 'SHIPPING');
-  const returns  = acc ? (acc.returns  || 'RETURN')   : (document.getElementById('setReturn')?.value   || 'RETURN');
-  const payment  = acc ? (acc.payment  || 'PAYMENT')  : (document.getElementById('setPayment')?.value  || 'PAYMENT');
-  const country  = acc ? (acc.country  || 'US')       : (document.getElementById('setCountry')?.value  || 'US');
-  const condition= acc ? (acc.condition|| '1500')     : (document.getElementById('setCondition')?.value|| '1500');
-
+  // v5.8: country comes from Generate page dropdown (selectedCountry var).
+  // Location/Shipping/Return/Payment/Condition come from Settings inputs (same for all countries).
   return {
-    location, shipping, returns, payment, country, condition,
+    location: document.getElementById('setLocation')?.value || '',
+    shipping: document.getElementById('setShipping')?.value || 'SHIPPING',
+    returns:  document.getElementById('setReturn')?.value   || 'RETURN',
+    payment:  document.getElementById('setPayment')?.value  || 'PAYMENT',
+    country:  (typeof selectedCountry !== 'undefined' && selectedCountry) ? selectedCountry : 'US',
+    condition:document.getElementById('setCondition')?.value || '1500',
     batchSize: parseInt(document.getElementById('setBatchSize')?.value) || 200,
     skuPrefix: (document.getElementById('setSkuPrefix')?.value || '').trim(),
     vaName: (document.getElementById('setVaName')?.value || '').trim(),
@@ -1554,10 +1567,7 @@ function getSettings() {
     apiKey: (document.getElementById('setApiKeyAnthropic') || {}).value || '',
     apiKeyOpenAI: (document.getElementById('setApiKeyOpenAI') || {}).value || '',
     apiKeyGemini: (document.getElementById('setApiKeyGemini') || {}).value || '',
-    apiKeyDeepSeek: (document.getElementById('setApiKeyDeepSeek') || {}).value || '',
-    // v5.7: expose active account info (for logging/debug)
-    activeAccountId: acc?.id || '',
-    activeAccountName: acc?.name || ''
+    apiKeyDeepSeek: (document.getElementById('setApiKeyDeepSeek') || {}).value || ''
   };
 }
 function saveSettings() {
@@ -1574,201 +1584,6 @@ function saveCF() {
 }
 function saveProducts() { storageSet(KEYS.PRODUCTS, productTypes); }
 
-// ═══════════════════════════════════════════════════════════
-// v5.7: ACCOUNT PROFILES — multi-country eBay accounts
-// ═══════════════════════════════════════════════════════════
-function saveAccounts() {
-  storageSet(KEYS.ACCOUNTS, accounts);
-  storageSet(KEYS.ACTIVE_ACCOUNT, activeAccountId);
-  updateActiveAccountBadge();
-}
-
-function getActiveAccount() {
-  if (!accounts.length) return null;
-  const found = accounts.find(a => a.id === activeAccountId);
-  return found || accounts[0];
-}
-
-// Fallback resolver: settings from active account, else from Settings page inputs (legacy)
-function resolveAccountSettings() {
-  const acc = getActiveAccount();
-  if (acc) {
-    return {
-      location: acc.location || '',
-      shipping: acc.shipping || 'SHIPPING',
-      returns: acc.returns || 'RETURN',
-      payment: acc.payment || 'PAYMENT',
-      country: acc.country || 'US',
-      condition: acc.condition || '1500'
-    };
-  }
-  // no accounts yet — fall back to Settings page raw values
-  return {
-    location: document.getElementById('setLocation')?.value || 'Kuala Lumpur, Malaysia',
-    shipping: document.getElementById('setShipping')?.value || 'SHIPPING',
-    returns:  document.getElementById('setReturn')?.value || 'RETURN',
-    payment:  document.getElementById('setPayment')?.value || 'PAYMENT',
-    country:  document.getElementById('setCountry')?.value || 'US',
-    condition:document.getElementById('setCondition')?.value || '1500'
-  };
-}
-
-function setActiveAccount(id) {
-  const acc = accounts.find(a => a.id === id);
-  if (!acc) return false;
-  activeAccountId = id;
-  saveAccounts();
-  renderAccountsList();
-  toast(`🏢 Đã chuyển sang: ${acc.name}`, 'ok');
-  return true;
-}
-
-function deleteAccount(id) {
-  const acc = accounts.find(a => a.id === id);
-  if (!acc) return;
-  if (!confirm(`Xóa account "${acc.name}"?`)) return;
-  accounts = accounts.filter(a => a.id !== id);
-  if (activeAccountId === id) activeAccountId = accounts[0]?.id || '';
-  saveAccounts();
-  renderAccountsList();
-  toast('🗑️ Đã xóa account', 'ok');
-}
-
-function openAccountModal(editId) {
-  const isEdit = !!editId;
-  const acc = isEdit ? accounts.find(a => a.id === editId) : {
-    id: 'acc_' + Date.now(),
-    name: '',
-    location: '',
-    country: 'US',
-    condition: '1500',
-    shipping: 'SHIPPING',
-    returns: 'RETURN',
-    payment: 'PAYMENT'
-  };
-  if (isEdit && !acc) return;
-
-  const modal = document.getElementById('productModal');
-  modal.innerHTML = `
-    <h2>${isEdit ? '✏️ Sửa' : '➕ Tạo'} Account Profile</h2>
-    <div class="field">
-      <label>Tên account (hiển thị nội bộ)</label>
-      <input type="text" id="accName" value="${esc(acc.name)}" placeholder="VD: 🇺🇸 US Main, 🇵🇭 PH Store, 🇲🇾 MY Test...">
-    </div>
-    <div class="row2">
-      <div class="field">
-        <label>Location (thành phố, quốc gia)</label>
-        <input type="text" id="accLocation" value="${esc(acc.location)}" placeholder="VD: Manila, Philippines">
-      </div>
-      <div class="field">
-        <label>Country code (2 ký tự)</label>
-        <input type="text" id="accCountry" value="${esc(acc.country)}" placeholder="US, PH, MY, CA, GB..." maxlength="2" style="text-transform:uppercase">
-      </div>
-    </div>
-    <div class="row2">
-      <div class="field">
-        <label>Shipping profile name</label>
-        <input type="text" id="accShipping" value="${esc(acc.shipping)}">
-      </div>
-      <div class="field">
-        <label>Return profile name</label>
-        <input type="text" id="accReturns" value="${esc(acc.returns)}">
-      </div>
-    </div>
-    <div class="row2">
-      <div class="field">
-        <label>Payment profile name</label>
-        <input type="text" id="accPayment" value="${esc(acc.payment)}">
-      </div>
-      <div class="field">
-        <label>Condition ID (1500 = New w/o tags)</label>
-        <input type="text" id="accCondition" value="${esc(acc.condition)}">
-      </div>
-    </div>
-    <div class="hint" style="margin-top:8px">
-      💡 Profile names phải khớp chính xác với profile đã tạo trong eBay Seller Hub (Business Policies).
-    </div>
-    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
-      <button class="btn" onclick="closeModal()">Hủy</button>
-      <button class="btn btn-primary" onclick="saveAccountModal('${acc.id}', ${!isEdit})">💾 Lưu</button>
-    </div>
-  `;
-  document.getElementById('modalOverlay').classList.add('show');
-}
-
-function saveAccountModal(id, isNew) {
-  const name = document.getElementById('accName').value.trim();
-  if (!name) { toast('❌ Nhập tên account', 'err'); return; }
-
-  const data = {
-    id,
-    name,
-    location: document.getElementById('accLocation').value.trim(),
-    country: document.getElementById('accCountry').value.trim().toUpperCase() || 'US',
-    condition: document.getElementById('accCondition').value.trim() || '1500',
-    shipping: document.getElementById('accShipping').value.trim() || 'SHIPPING',
-    returns: document.getElementById('accReturns').value.trim() || 'RETURN',
-    payment: document.getElementById('accPayment').value.trim() || 'PAYMENT'
-  };
-
-  if (isNew) {
-    accounts.push(data);
-    if (!activeAccountId) activeAccountId = data.id;  // first account auto-active
-  } else {
-    const idx = accounts.findIndex(a => a.id === id);
-    if (idx !== -1) accounts[idx] = data;
-  }
-  saveAccounts();
-  renderAccountsList();
-  closeModal();
-  toast(`✅ Đã lưu: ${data.name}`, 'ok');
-}
-
-function renderAccountsList() {
-  const el = document.getElementById('accountsList');
-  if (!el) return;
-  if (!accounts.length) {
-    el.innerHTML = '<div style="color:var(--dim);padding:20px;text-align:center;font-size:13px">Chưa có account nào. Nhấn "+ Thêm account" bên dưới để tạo profile đầu tiên.</div>';
-    return;
-  }
-  el.innerHTML = accounts.map(a => {
-    const isActive = a.id === activeAccountId;
-    return `
-      <div class="account-card" style="padding:12px 14px;border:1px solid ${isActive ? 'var(--accent)' : 'var(--border)'};border-radius:8px;margin-bottom:8px;${isActive ? 'background:rgba(37,99,235,.06)' : ''}">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:600;font-size:14px;margin-bottom:4px">
-              ${isActive ? '<span style="color:var(--accent)">⭐ </span>' : ''}${esc(a.name)}
-            </div>
-            <div style="font-size:11px;color:var(--dim);line-height:1.5">
-              📍 ${esc(a.location) || '—'} · 🌐 ${esc(a.country)} · 🚚 ${esc(a.shipping)} / ↩️ ${esc(a.returns)} / 💳 ${esc(a.payment)}
-            </div>
-          </div>
-          <div style="display:flex;gap:4px;flex-shrink:0">
-            ${isActive ? '' : `<button class="btn btn-sm" onclick="setActiveAccount('${a.id}')" style="border-color:var(--accent);color:var(--accent)">⭐ Dùng</button>`}
-            <button class="btn btn-sm btn-ghost" onclick="openAccountModal('${a.id}')">✏️</button>
-            <button class="btn btn-sm btn-ghost" onclick="deleteAccount('${a.id}')">🗑️</button>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function updateActiveAccountBadge() {
-  const badge = document.getElementById('activeAccountBadge');
-  if (!badge) return;
-  const acc = getActiveAccount();
-  if (acc) {
-    badge.innerHTML = `🏢 <b>${esc(acc.name)}</b> · ${esc(acc.country)}`;
-    badge.style.display = '';
-    badge.title = `Active account: ${acc.name}\nLocation: ${acc.location}\nShipping: ${acc.shipping}\nClick để đổi account`;
-  } else {
-    badge.innerHTML = '⚠️ Chưa có account — vào Settings để tạo';
-    badge.style.display = '';
-    badge.title = 'No account configured';
-  }
-}
 
 // ═══════════════════════════════════════════════════════════
 // NAVIGATION (FIX: no longer depends on event.target)
@@ -1791,9 +1606,6 @@ function showPage(id, btn) {
     renderModelPicker();
     updateCostEstimate();
     if (typeof refreshCompanyConfigStatus === 'function') refreshCompanyConfigStatus();
-    // v5.7: re-render accounts list + badge on settings page visit
-    if (typeof renderAccountsList === 'function') renderAccountsList();
-    if (typeof updateActiveAccountBadge === 'function') updateActiveAccountBadge();
   } else if (id === 'sheet') {
     refreshSheetPage();
   }
@@ -1807,6 +1619,27 @@ function renderProductSelector() {
   el.innerHTML = productTypes.map(p =>
     `<div class="product-chip ${p.id === activeProductId ? 'active' : ''}" onclick="selectProduct('${p.id}')">${esc(p.icon)} ${esc(p.name)}</div>`
   ).join('');
+}
+
+// v5.8: country dropdown render + change handler
+function renderCountrySelect() {
+  const el = document.getElementById('countrySelect');
+  if (!el) return;
+  // Validate selectedCountry is in list, else default US
+  if (!COUNTRIES.find(c => c.code === selectedCountry)) selectedCountry = 'US';
+  el.innerHTML = COUNTRIES.map(c =>
+    `<option value="${c.code}" ${c.code === selectedCountry ? 'selected' : ''}>${c.flag} ${c.code} · ${esc(c.name)}</option>`
+  ).join('');
+}
+
+function onCountryChange() {
+  const el = document.getElementById('countrySelect');
+  if (!el) return;
+  selectedCountry = el.value;
+  storageSet(KEYS.COUNTRY, selectedCountry);
+  // Optional toast — subtle confirmation
+  const c = COUNTRIES.find(x => x.code === selectedCountry);
+  if (c) toast(`🌐 Country: ${c.flag} ${c.name}`, 'ok');
 }
 
 function selectProduct(id) {
